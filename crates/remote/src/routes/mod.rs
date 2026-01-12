@@ -16,6 +16,7 @@ use crate::{AppState, auth::require_session};
 
 mod electric_proxy;
 mod error;
+mod files;
 mod github_app;
 mod identity;
 mod oauth;
@@ -64,6 +65,7 @@ pub fn router(state: AppState) -> Router {
         .merge(oauth::protected_router())
         .merge(electric_proxy::router())
         .merge(github_app::protected_router())
+        .merge(files::router())
         .layer(middleware::from_fn_with_state(
             state.clone(),
             require_session,

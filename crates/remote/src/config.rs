@@ -14,6 +14,7 @@ pub struct RemoteServerConfig {
     pub electric_secret: Option<SecretString>,
     pub electric_role_password: Option<SecretString>,
     pub r2: Option<R2Config>,
+    pub files_r2: Option<FilesR2Config>,
     pub review_worker_base_url: Option<String>,
     pub github_app: Option<GitHubAppConfig>,
 }
@@ -61,6 +62,71 @@ impl R2Config {
             endpoint,
             bucket,
             presign_expiry_secs,
+        }))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct FilesR2Config {
+    pub access_key_id: String,
+    pub secret_access_key: SecretString,
+    pub endpoint: String,
+    pub bucket: String,
+    pub public_url: String,
+    pub presign_expiry_secs: u64,
+    pub max_file_size_bytes: u64,
+}
+
+impl FilesR2Config {
+    pub fn from_env() -> Result<Option<Self>, ConfigError> {
+        let access_key_id = match env::var("R2_FILES_ACCESS_KEY_ID") {
+            Ok(v) => v,
+            Err(_) => {
+                tracing::info!("R2_FILES_ACCESS_KEY_ID not set, files storage disabled");
+                return Ok(None);
+            }
+        };
+
+        tracing::info!("R2_FILES_ACCESS_KEY_ID is set, checking other files R2 env vars");
+
+        let secret_access_key = env::var("R2_FILES_SECRET_ACCESS_KEY")
+            .map_err(|_| ConfigError::MissingVar("R2_FILES_SECRET_ACCESS_KEY"))?;
+
+        let endpoint = env::var("R2_FILES_ENDPOINT")
+            .map_err(|_| ConfigError::MissingVar("R2_FILES_ENDPOINT"))?;
+
+        let bucket = env::var("R2_FILES_BUCKET")
+            .map_err(|_| ConfigError::MissingVar("R2_FILES_BUCKET"))?;
+
+        let public_url = env::var("R2_FILES_PUBLIC_URL")
+            .map_err(|_| ConfigError::MissingVar("R2_FILES_PUBLIC_URL"))?;
+
+        let presign_expiry_secs = env::var("R2_FILES_PRESIGN_EXPIRY_SECS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(300); // 5 minutes default for uploads
+
+        let max_file_size_bytes = env::var("R2_FILES_MAX_SIZE_BYTES")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(5 * 1024 * 1024); // 5MB default
+
+        tracing::info!(
+            endpoint = %endpoint,
+            bucket = %bucket,
+            public_url = %public_url,
+            max_file_size_bytes = %max_file_size_bytes,
+            "Files R2 config loaded successfully"
+        );
+
+        Ok(Some(Self {
+            access_key_id,
+            secret_access_key: SecretString::new(secret_access_key.into()),
+            endpoint,
+            bucket,
+            public_url,
+            presign_expiry_secs,
+            max_file_size_bytes,
         }))
     }
 }
@@ -150,6 +216,8 @@ impl RemoteServerConfig {
 
         let r2 = R2Config::from_env()?;
 
+        let files_r2 = FilesR2Config::from_env()?;
+
         let review_worker_base_url = env::var("REVIEW_WORKER_BASE_URL").ok();
 
         let github_app = GitHubAppConfig::from_env()?;
@@ -163,6 +231,7 @@ impl RemoteServerConfig {
             electric_secret,
             electric_role_password,
             r2,
+            files_r2,
             review_worker_base_url,
             github_app,
         })

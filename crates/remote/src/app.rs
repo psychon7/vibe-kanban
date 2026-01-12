@@ -12,6 +12,7 @@ use crate::{
     },
     config::RemoteServerConfig,
     db,
+    files::FilesService,
     github_app::GitHubAppService,
     mail::LoopsMailer,
     r2::R2Service,
@@ -95,6 +96,15 @@ impl Server {
             );
         }
 
+        let files = config.files_r2.as_ref().map(FilesService::new);
+        if files.is_some() {
+            tracing::info!("Files storage service initialized");
+        } else {
+            tracing::info!(
+                "Files storage service not configured. Set R2_FILES_ACCESS_KEY_ID, R2_FILES_SECRET_ACCESS_KEY, R2_FILES_ENDPOINT, R2_FILES_BUCKET, and R2_FILES_PUBLIC_URL to enable."
+            );
+        }
+
         let http_client = reqwest::Client::builder()
             .user_agent("VibeKanbanRemote/1.0")
             .build()
@@ -134,6 +144,7 @@ impl Server {
             server_public_base_url,
             http_client,
             r2,
+            files,
             github_app,
         );
 
