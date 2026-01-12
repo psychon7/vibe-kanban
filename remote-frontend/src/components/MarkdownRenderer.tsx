@@ -7,10 +7,12 @@ export function MarkdownRenderer({
   content,
   className = "",
 }: MarkdownRendererProps) {
+  const parsedContent = parseMarkdown(content);
+  
   return (
     <div
       className={`prose prose-sm max-w-none [&>*:first-child]:mt-0 ${className}`}
-      dangerouslySetInnerHTML={{ __html: parseMarkdown(content) }}
+      dangerouslySetInnerHTML={{ __html: parsedContent }}
     />
   );
 }
