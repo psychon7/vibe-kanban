@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import DashboardPage from './pages/DashboardPage';
@@ -68,7 +69,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <WorkspaceProvider>
+          <AppRoutes />
+        </WorkspaceProvider>
       </AuthProvider>
     </BrowserRouter>
   );
