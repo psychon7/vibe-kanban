@@ -12,20 +12,16 @@ This directory contains the Cloudflare Workers API for Vibe Kanban team features
 
 ```bash
 # Install dependencies
-pnpm install
-
-# Create D1 database
-pnpm run d1:create
-# Note: Copy the database_id from output to wrangler.toml
+npm install
 
 # Apply migrations locally
-pnpm run d1:migrate
+npm run d1:migrate
 
 # Seed development data
-pnpm run d1:seed
+npm run d1:seed
 
 # Start local development server
-pnpm run dev:local
+npm run dev:local
 ```
 
 ## Project Structure
@@ -44,80 +40,95 @@ workers/
 └── wrangler.toml         # Cloudflare configuration
 ```
 
+## Environments
+
+| Environment | Database | Status |
+|-------------|----------|--------|
+| Development | `vibe-kanban-db` (local) | ✅ Ready |
+| Staging | `vibe-kanban-db-staging` | ✅ Deployed |
+| Production | `vibe-kanban-db-production` | ✅ Deployed |
+
 ## D1 Database Commands
 
-### Create Database
-```bash
-pnpm run d1:create
-```
-After running, copy the `database_id` from the output to `wrangler.toml`.
-
 ### Migrations
+
 ```bash
-# List pending migrations
-pnpm run d1:migrate:list
-
 # Apply migrations locally
-pnpm run d1:migrate
+npm run d1:migrate
 
-# Apply migrations to production
-pnpm run d1:migrate:prod
+# Apply to staging
+npm run d1:migrate:staging
+
+# Apply to production
+npm run d1:migrate:prod
+
+# List migrations
+npm run d1:migrate:list
 ```
 
 ### Query Database
-```bash
-# Interactive query (local)
-pnpm run d1:query -- --command "SELECT * FROM users"
 
-# Interactive query (production)
-pnpm run d1:query:prod -- --command "SELECT * FROM roles"
+```bash
+# Local query
+npm run d1:query -- --command "SELECT * FROM users"
+
+# Staging query
+npm run d1:query:staging -- --command "SELECT * FROM roles"
+
+# Production query
+npm run d1:query:prod -- --command "SELECT * FROM roles"
+```
+
+### Seeding
+
+```bash
+# Seed local database
+npm run d1:seed
+
+# Seed staging (development data)
+npm run d1:seed:staging
+
+# Seed production (NOT recommended for dev data)
+npm run d1:seed:prod
 ```
 
 ### Reset Local Database
+
 ```bash
-pnpm run d1:reset
-```
-
-## Configuration
-
-### wrangler.toml Setup
-
-After creating resources, update `wrangler.toml`:
-
-1. **D1 Database**: Replace `<your-database-id>` with actual ID from `d1:create`
-2. **KV Namespace**: Replace `<your-kv-namespace-id>` with ID from `kv:create`
-
-### Secrets
-
-Set secrets for production:
-```bash
-wrangler secret put OPENAI_API_KEY
-wrangler secret put ANTHROPIC_API_KEY
-```
-
-## Development
-
-### Local Development
-```bash
-# Uses local SQLite for D1, no cloud resources needed
-pnpm run dev:local
-```
-
-### Remote Development
-```bash
-# Uses remote D1 database (requires setup)
-pnpm run dev
+npm run d1:reset
 ```
 
 ## Deployment
 
-### Deploy to Production
 ```bash
-# Apply migrations first
-pnpm run d1:migrate:prod
+# Deploy to staging
+npm run deploy:staging
 
-# Then deploy worker
-pnpm run deploy:prod
+# Deploy to production
+npm run deploy:prod
+```
+
+## Configuration
+
+### Secrets
+
+Secrets are configured per environment via `wrangler secret put`:
+
+| Secret | Description |
+|--------|-------------|
+| `JWT_SECRET` | JWT token signing key |
+| `AI_GATEWAY_TOKEN` | AI Gateway authentication |
+| `DATABASE_ENCRYPTION_KEY` | Sensitive data encryption |
+| `OPENAI_API_KEY` | OpenAI API (optional) |
+| `ANTHROPIC_API_KEY` | Anthropic API (optional) |
+
+### KV Namespaces
+
+KV namespace IDs need to be created and added to wrangler.toml:
+```bash
+wrangler kv:namespace create CACHE
+wrangler kv:namespace create CACHE --env staging
+wrangler kv:namespace create CACHE --env production
 ```
 
 ## Database Schema
@@ -132,11 +143,14 @@ pnpm run deploy:prod
 | `permissions` | Permission definitions |
 | `role_permissions` | Role-permission mappings |
 | `workspace_members` | Team membership |
+| `workspace_invitations` | Pending invitations |
 | `audit_log` | Activity audit trail |
 | `task_acl` | Task-level access control |
 | `prompt_enhancements` | AI prompt enhancement history |
 | `prompt_templates` | Reusable prompt templates |
 | `prompt_enhancement_settings` | Per-workspace AI settings |
+| `user_sessions` | Session management |
+| `rate_limits` | Rate limiting tracking |
 
 ### Role Hierarchy
 
@@ -156,10 +170,13 @@ pnpm run deploy:prod
 ## Troubleshooting
 
 ### "Database not found" error
-Run `pnpm run d1:create` and update the `database_id` in `wrangler.toml`.
+Use binding name `DB` with environment flag:
+```bash
+wrangler d1 migrations apply DB --env production --remote
+```
 
 ### Migration errors
 Check SQL syntax. D1 uses SQLite, not PostgreSQL.
 
 ### Local development issues
-Reset local state: `pnpm run d1:reset`
+Reset local state: `npm run d1:reset`

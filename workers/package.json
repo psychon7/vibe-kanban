@@ -8,29 +8,34 @@
     "dev:local": "wrangler dev --local",
     "build": "tsc",
     "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
     "deploy:prod": "wrangler deploy --env production",
     
     "d1:create": "wrangler d1 create vibe-kanban-db",
     "d1:list": "wrangler d1 list",
     "d1:info": "wrangler d1 info vibe-kanban-db",
     
-    "d1:migrate": "wrangler d1 migrations apply vibe-kanban-db --local",
-    "d1:migrate:prod": "wrangler d1 migrations apply vibe-kanban-db --remote",
-    "d1:migrate:list": "wrangler d1 migrations list vibe-kanban-db",
+    "d1:migrate": "wrangler d1 migrations apply DB --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "d1:migrate:staging": "wrangler d1 migrations apply DB --env staging --remote",
+    "d1:migrate:prod": "wrangler d1 migrations apply DB --env production --remote",
+    "d1:migrate:list": "wrangler d1 migrations list DB",
     
-    "d1:seed": "wrangler d1 execute vibe-kanban-db --local --file=scripts/seed.sql",
-    "d1:seed:prod": "wrangler d1 execute vibe-kanban-db --remote --file=scripts/seed.sql",
+    "d1:seed": "wrangler d1 execute DB --local --file=scripts/seed.sql",
+    "d1:seed:staging": "wrangler d1 execute DB --env staging --remote --file=scripts/seed.sql",
+    "d1:seed:prod": "wrangler d1 execute DB --env production --remote --file=scripts/seed.sql",
     
-    "d1:query": "wrangler d1 execute vibe-kanban-db --local",
-    "d1:query:prod": "wrangler d1 execute vibe-kanban-db --remote",
+    "d1:query": "wrangler d1 execute DB --local",
+    "d1:query:staging": "wrangler d1 execute DB --env staging --remote",
+    "d1:query:prod": "wrangler d1 execute DB --env production --remote",
     
-    "d1:reset": "rm -rf .wrangler/state && pnpm run d1:migrate",
+    "d1:reset": "rm -rf .wrangler/state && npm run d1:migrate",
     
     "r2:create": "wrangler r2 bucket create vibe-kanban-storage",
     "kv:create": "wrangler kv:namespace create CACHE",
     
-    "setup": "pnpm run d1:create && pnpm run r2:create && pnpm run kv:create",
-    "test:local": "pnpm run d1:migrate && pnpm run d1:seed && pnpm run dev:local",
+    "setup": "npm run d1:create && npm run r2:create && npm run kv:create",
+    "test:local": "npm run d1:migrate && npm run d1:seed && npm run dev:local",
     
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts"

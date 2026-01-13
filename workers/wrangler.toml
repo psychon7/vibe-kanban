@@ -7,24 +7,18 @@ compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# D1 Database Binding
+# D1 Database Binding (Development)
 # ─────────────────────────────────────────────────────────────────────────────
-# IMPORTANT: After creating the D1 database with `wrangler d1 create`,
-# replace <your-database-id> with the actual database ID returned.
-#
-# Create database: pnpm run d1:create
-# Apply migrations: pnpm run d1:migrate (local) or pnpm run d1:migrate:prod (production)
 
 [[d1_databases]]
 binding = "DB"
 database_name = "vibe-kanban-db"
-database_id = "<your-database-id>"
+database_id = "161a7750-7a11-4fa8-961c-3417afcc52c1"
 migrations_dir = "migrations"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # R2 Storage Binding (for avatars, exports, attachments)
 # ─────────────────────────────────────────────────────────────────────────────
-# IMPORTANT: Create R2 bucket first: wrangler r2 bucket create vibe-kanban-storage
 
 [[r2_buckets]]
 binding = "STORAGE"
@@ -33,7 +27,7 @@ bucket_name = "vibe-kanban-storage"
 # ─────────────────────────────────────────────────────────────────────────────
 # KV Namespace Binding (for session cache, rate limiting)
 # ─────────────────────────────────────────────────────────────────────────────
-# IMPORTANT: Create KV namespace first: wrangler kv:namespace create CACHE
+# Create KV namespace: wrangler kv:namespace create CACHE
 
 [[kv_namespaces]]
 binding = "CACHE"
@@ -42,15 +36,13 @@ id = "<your-kv-namespace-id>"
 # ─────────────────────────────────────────────────────────────────────────────
 # AI Gateway Configuration
 # ─────────────────────────────────────────────────────────────────────────────
-# Configure AI Gateway in Cloudflare Dashboard first
 
 [ai]
 binding = "AI_GATEWAY"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Environment Variables
+# Environment Variables (Development)
 # ─────────────────────────────────────────────────────────────────────────────
-# Non-sensitive configuration values
 
 [vars]
 ENVIRONMENT = "development"
@@ -60,10 +52,35 @@ LOG_LEVEL = "debug"
 # Secrets (set via: wrangler secret put <SECRET_NAME>)
 # ─────────────────────────────────────────────────────────────────────────────
 # Required secrets:
-# - OPENAI_API_KEY: For prompt enhancement
-# - ANTHROPIC_API_KEY: For Claude integration
-# - CF_ACCESS_CLIENT_ID: Cloudflare Access service token (optional)
-# - CF_ACCESS_CLIENT_SECRET: Cloudflare Access service token (optional)
+# - JWT_SECRET: For JWT token signing
+# - AI_GATEWAY_TOKEN: For AI Gateway authentication
+# - DATABASE_ENCRYPTION_KEY: For encrypting sensitive data
+# - OPENAI_API_KEY: For prompt enhancement (optional)
+# - ANTHROPIC_API_KEY: For Claude integration (optional)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Staging Environment
+# ─────────────────────────────────────────────────────────────────────────────
+
+[env.staging]
+vars = { ENVIRONMENT = "staging", LOG_LEVEL = "debug" }
+
+[env.staging.ai]
+binding = "AI_GATEWAY"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "vibe-kanban-db-staging"
+database_id = "668581ef-bfd4-4c11-84c0-1ba6bd043eb6"
+migrations_dir = "migrations"
+
+[[env.staging.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "vibe-kanban-storage-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "<your-staging-kv-namespace-id>"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Production Environment
@@ -72,12 +89,22 @@ LOG_LEVEL = "debug"
 [env.production]
 vars = { ENVIRONMENT = "production", LOG_LEVEL = "info" }
 
-# Override D1 database for production if using a separate database
-# [[env.production.d1_databases]]
-# binding = "DB"
-# database_name = "vibe-kanban-db-prod"
-# database_id = "<your-production-database-id>"
-# migrations_dir = "migrations"
+[env.production.ai]
+binding = "AI_GATEWAY"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "vibe-kanban-db-production"
+database_id = "783e3bee-b734-4ff1-8b4b-9cbe9e599ac8"
+migrations_dir = "migrations"
+
+[[env.production.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "vibe-kanban-storage-production"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "<your-production-kv-namespace-id>"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Development Settings
