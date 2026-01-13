@@ -204,6 +204,32 @@ export type UpdateMemberRoleRequest = { role: MemberRole, };
 
 export type UpdateMemberRoleResponse = { user_id: string, role: MemberRole, };
 
+export enum WorkspacePermission { member.invite = "member.invite", member.remove = "member.remove", member.role.change = "member.role.change" }
+
+export type WorkspaceMember = { workspace_id: string, user_id: string, role: MemberRole, permissions: Array<WorkspacePermission>, joined_at: string, };
+
+export type WorkspaceMemberWithProfile = { workspace_id: string, user_id: string, role: MemberRole, permissions: Array<WorkspacePermission>, joined_at: string, first_name: string | null, last_name: string | null, username: string | null, email: string | null, avatar_url: string | null, };
+
+export type ListWorkspaceMembersResponse = { members: Array<WorkspaceMemberWithProfile>, };
+
+export type WorkspaceInvitation = { id: string, workspace_id: string, invited_by_user_id: string | null, email: string, role: MemberRole, status: InvitationStatus, token: string, created_at: string, expires_at: string, };
+
+export type InviteWorkspaceMemberRequest = { email: string, role: MemberRole, };
+
+export type InviteWorkspaceMemberResponse = { invitation: WorkspaceInvitation, };
+
+export type UpdateWorkspaceMemberRoleRequest = { role: MemberRole, };
+
+export type UpdateWorkspaceMemberRoleResponse = { user_id: string, role: MemberRole, };
+
+export type GetWorkspaceInvitationResponse = { id: string, workspace_id: string, role: MemberRole, expires_at: string, };
+
+export type AcceptWorkspaceInvitationResponse = { workspace_id: string, role: MemberRole, };
+
+export type RevokeWorkspaceInvitationRequest = { invitation_id: string, };
+
+export type ListWorkspaceInvitationsResponse = { invitations: Array<WorkspaceInvitation>, };
+
 export type RemoteProject = { id: string, organization_id: string, name: string, metadata: Record<string, unknown>, created_at: string, };
 
 export type ListProjectsResponse = { projects: Array<RemoteProject>, };
