@@ -1,6 +1,6 @@
 {
   "name": "vibe-kanban-workers",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -33,15 +33,24 @@
     
     "r2:create": "wrangler r2 bucket create vibe-kanban-storage",
     "kv:create": "wrangler kv:namespace create CACHE",
+    "kv:create:staging": "wrangler kv:namespace create CACHE --env staging",
+    "kv:create:prod": "wrangler kv:namespace create CACHE --env production",
     
     "setup": "npm run d1:create && npm run r2:create && npm run kv:create",
+    "setup:all-envs": "npm run kv:create && npm run kv:create:staging && npm run kv:create:prod",
     "test:local": "npm run d1:migrate && npm run d1:seed && npm run dev:local",
     
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts"
   },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
+    "hono": "^4.11.3",
+    "zod": "^3.24.0"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240620.0",
+    "@types/node": "^22.0.0",
     "typescript": "^5.4.5",
     "wrangler": "^3.60.0"
   }

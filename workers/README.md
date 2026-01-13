@@ -1,6 +1,16 @@
-# Vibe Kanban Cloudflare Workers
+# Vibe Kanban API - Cloudflare Workers
 
-This directory contains the Cloudflare Workers API for Vibe Kanban team features, using D1 (SQLite) for the database.
+A Cloudflare Workers API for Vibe Kanban team features, using Hono framework and D1 (SQLite) for the database.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | [Hono](https://hono.dev/) |
+| Database | Cloudflare D1 (SQLite) |
+| Storage | Cloudflare R2 |
+| Cache | Cloudflare Workers KV |
+| AI | Cloudflare AI Gateway |
 
 ## Prerequisites
 
@@ -24,29 +34,98 @@ npm run d1:seed
 npm run dev:local
 ```
 
+The API will be available at `http://localhost:8787`
+
 ## Project Structure
 
 ```
 workers/
-├── migrations/           # D1 SQL migrations
+├── migrations/               # D1 SQL migrations
 │   ├── 0001_initial_schema.sql
 │   └── 0002_seed_roles_permissions.sql
 ├── scripts/
-│   └── seed.sql          # Development seed data
+│   └── seed.sql              # Development seed data
 ├── src/
-│   └── index.ts          # Worker entry point
+│   ├── index.ts              # Hono app entry point
+│   ├── types/
+│   │   └── env.ts            # Environment bindings
+│   ├── middleware/
+│   │   ├── index.ts          # Barrel export
+│   │   ├── auth.ts           # Authentication middleware
+│   │   ├── permissions.ts    # RBAC middleware
+│   │   ├── error-handler.ts  # Error handling
+│   │   └── request-id.ts     # Request tracing
+│   └── routes/
+│       ├── index.ts          # Barrel export
+│       ├── auth.ts           # /api/v1/auth/*
+│       ├── users.ts          # /api/v1/users/*
+│       ├── workspaces.ts     # /api/v1/workspaces/*
+│       ├── projects.ts       # /api/v1/projects/*
+│       ├── tasks.ts          # /api/v1/tasks/*
+│       ├── prompts.ts        # /api/v1/prompts/*
+│       └── audit.ts          # /api/v1/audit/*
 ├── package.json
 ├── tsconfig.json
-└── wrangler.toml         # Cloudflare configuration
+└── wrangler.toml             # Cloudflare configuration
 ```
 
 ## Environments
 
-| Environment | Database | Status |
-|-------------|----------|--------|
+| Environment | D1 Database | Status |
+|-------------|-------------|--------|
 | Development | `vibe-kanban-db` (local) | ✅ Ready |
 | Staging | `vibe-kanban-db-staging` | ✅ Deployed |
 | Production | `vibe-kanban-db-production` | ✅ Deployed |
+
+## API Endpoints
+
+### Health
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Health check |
+| GET | `/health/db` | Database connectivity |
+
+### Authentication
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/auth/signup` | Create account |
+| POST | `/api/v1/auth/login` | Login |
+| POST | `/api/v1/auth/logout` | Logout |
+| GET | `/api/v1/auth/me` | Get current user |
+
+### Workspaces
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/workspaces` | List workspaces |
+| POST | `/api/v1/workspaces` | Create workspace |
+| GET | `/api/v1/workspaces/:id` | Get workspace |
+| PATCH | `/api/v1/workspaces/:id` | Update workspace |
+| DELETE | `/api/v1/workspaces/:id` | Delete workspace |
+| GET | `/api/v1/workspaces/:id/members` | List members |
+| POST | `/api/v1/workspaces/:id/members/invite` | Invite member |
+
+### Tasks
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/tasks` | List tasks |
+| POST | `/api/v1/tasks` | Create task |
+| GET | `/api/v1/tasks/:id` | Get task |
+| PATCH | `/api/v1/tasks/:id` | Update task |
+| PATCH | `/api/v1/tasks/:id/assign` | Assign task |
+| POST | `/api/v1/tasks/:id/enhance` | Enhance prompt |
+
+### Prompts
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/prompts/enhance` | Enhance prompt |
+| POST | `/api/v1/prompts/score` | Score prompt quality |
+| GET | `/api/v1/prompts/templates` | List templates |
+| POST | `/api/v1/prompts/templates` | Create template |
 
 ## D1 Database Commands
 
@@ -85,11 +164,8 @@ npm run d1:query:prod -- --command "SELECT * FROM roles"
 # Seed local database
 npm run d1:seed
 
-# Seed staging (development data)
+# Seed staging
 npm run d1:seed:staging
-
-# Seed production (NOT recommended for dev data)
-npm run d1:seed:prod
 ```
 
 ### Reset Local Database
@@ -112,24 +188,36 @@ npm run deploy:prod
 
 ### Secrets
 
-Secrets are configured per environment via `wrangler secret put`:
+Set secrets per environment via `wrangler secret put`:
+
+```bash
+wrangler secret put JWT_SECRET
+wrangler secret put JWT_SECRET --env staging
+wrangler secret put JWT_SECRET --env production
+```
 
 | Secret | Description |
 |--------|-------------|
 | `JWT_SECRET` | JWT token signing key |
-| `AI_GATEWAY_TOKEN` | AI Gateway authentication |
-| `DATABASE_ENCRYPTION_KEY` | Sensitive data encryption |
 | `OPENAI_API_KEY` | OpenAI API (optional) |
 | `ANTHROPIC_API_KEY` | Anthropic API (optional) |
 
 ### KV Namespaces
 
-KV namespace IDs need to be created and added to wrangler.toml:
+Create KV namespaces for each environment:
+
 ```bash
+# Development
 wrangler kv:namespace create CACHE
+
+# Staging
 wrangler kv:namespace create CACHE --env staging
+
+# Production
 wrangler kv:namespace create CACHE --env production
 ```
+
+Update the `id` values in `wrangler.toml` after creation.
 
 ## Database Schema
 
@@ -137,8 +225,8 @@ wrangler kv:namespace create CACHE --env production
 
 | Table | Description |
 |-------|-------------|
-| `users` | User accounts (synced from CF Access) |
-| `workspaces_team` | Team workspaces for collaboration |
+| `users` | User accounts |
+| `workspaces_team` | Team workspaces |
 | `roles` | RBAC roles (Owner, Admin, Member, Viewer) |
 | `permissions` | Permission definitions |
 | `role_permissions` | Role-permission mappings |
@@ -149,34 +237,54 @@ wrangler kv:namespace create CACHE --env production
 | `prompt_enhancements` | AI prompt enhancement history |
 | `prompt_templates` | Reusable prompt templates |
 | `prompt_enhancement_settings` | Per-workspace AI settings |
-| `user_sessions` | Session management |
-| `rate_limits` | Rate limiting tracking |
 
 ### Role Hierarchy
 
 | Role | Permissions |
 |------|-------------|
-| Owner | All permissions including workspace.delete |
-| Admin | All permissions except workspace.delete |
+| Owner | All permissions including `workspace.delete` |
+| Admin | All permissions except `workspace.delete` |
 | Member | Create/edit tasks, run attempts, use prompts |
 | Viewer | Read-only access |
 
-## API Endpoints
+## Development
 
-- `GET /health` - Health check
-- `GET /health/db` - Database health check
-- `GET /api/*` - API routes (see API documentation)
+### Type Checking
+
+```bash
+npm run typecheck
+```
+
+### Local Testing
+
+```bash
+npm run test:local
+```
+
+This runs migrations, seeds data, and starts the dev server.
 
 ## Troubleshooting
 
 ### "Database not found" error
-Use binding name `DB` with environment flag:
+
+Use the binding name `DB` with environment flag:
+
 ```bash
 wrangler d1 migrations apply DB --env production --remote
 ```
 
 ### Migration errors
+
 Check SQL syntax. D1 uses SQLite, not PostgreSQL.
 
 ### Local development issues
-Reset local state: `npm run d1:reset`
+
+Reset local state:
+
+```bash
+npm run d1:reset
+```
+
+### CORS issues
+
+Verify `CORS_ORIGIN` in `wrangler.toml` matches your frontend URL.

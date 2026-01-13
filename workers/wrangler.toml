@@ -1,5 +1,7 @@
-# Cloudflare Workers Configuration for Vibe Kanban
-# See: https://developers.cloudflare.com/workers/configuration/
+# ═══════════════════════════════════════════════════════════════════════════════
+# Vibe Kanban API - Cloudflare Workers Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+# Documentation: https://developers.cloudflare.com/workers/configuration/
 
 name = "vibe-kanban-api"
 main = "src/index.ts"
@@ -17,7 +19,7 @@ database_id = "161a7750-7a11-4fa8-961c-3417afcc52c1"
 migrations_dir = "migrations"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# R2 Storage Binding (for avatars, exports, attachments)
+# R2 Storage Binding (avatars, exports, attachments)
 # ─────────────────────────────────────────────────────────────────────────────
 
 [[r2_buckets]]
@@ -25,20 +27,20 @@ binding = "STORAGE"
 bucket_name = "vibe-kanban-storage"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# KV Namespace Binding (for session cache, rate limiting)
+# KV Namespace Binding (session cache, rate limiting)
+# Create: wrangler kv:namespace create CACHE
 # ─────────────────────────────────────────────────────────────────────────────
-# Create KV namespace: wrangler kv:namespace create CACHE
 
 [[kv_namespaces]]
 binding = "CACHE"
-id = "<your-kv-namespace-id>"
+id = "placeholder-create-with-wrangler-kv-namespace-create-CACHE"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AI Gateway Configuration
 # ─────────────────────────────────────────────────────────────────────────────
 
 [ai]
-binding = "AI_GATEWAY"
+binding = "AI"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Environment Variables (Development)
@@ -47,26 +49,25 @@ binding = "AI_GATEWAY"
 [vars]
 ENVIRONMENT = "development"
 LOG_LEVEL = "debug"
+CORS_ORIGIN = "http://localhost:5173"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Secrets (set via: wrangler secret put <SECRET_NAME>)
 # ─────────────────────────────────────────────────────────────────────────────
 # Required secrets:
 # - JWT_SECRET: For JWT token signing
-# - AI_GATEWAY_TOKEN: For AI Gateway authentication
-# - DATABASE_ENCRYPTION_KEY: For encrypting sensitive data
 # - OPENAI_API_KEY: For prompt enhancement (optional)
 # - ANTHROPIC_API_KEY: For Claude integration (optional)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Staging Environment
-# ─────────────────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# STAGING ENVIRONMENT
+# ═══════════════════════════════════════════════════════════════════════════════
 
 [env.staging]
-vars = { ENVIRONMENT = "staging", LOG_LEVEL = "debug" }
+vars = { ENVIRONMENT = "staging", LOG_LEVEL = "debug", CORS_ORIGIN = "https://staging.vibe-kanban.pages.dev" }
 
 [env.staging.ai]
-binding = "AI_GATEWAY"
+binding = "AI"
 
 [[env.staging.d1_databases]]
 binding = "DB"
@@ -80,17 +81,17 @@ bucket_name = "vibe-kanban-storage-staging"
 
 [[env.staging.kv_namespaces]]
 binding = "CACHE"
-id = "<your-staging-kv-namespace-id>"
+id = "placeholder-create-with-wrangler-kv-namespace-create-CACHE-staging"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Production Environment
-# ─────────────────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# PRODUCTION ENVIRONMENT
+# ═══════════════════════════════════════════════════════════════════════════════
 
 [env.production]
-vars = { ENVIRONMENT = "production", LOG_LEVEL = "info" }
+vars = { ENVIRONMENT = "production", LOG_LEVEL = "info", CORS_ORIGIN = "https://vibe-kanban.pages.dev" }
 
 [env.production.ai]
-binding = "AI_GATEWAY"
+binding = "AI"
 
 [[env.production.d1_databases]]
 binding = "DB"
@@ -104,7 +105,7 @@ bucket_name = "vibe-kanban-storage-production"
 
 [[env.production.kv_namespaces]]
 binding = "CACHE"
-id = "<your-production-kv-namespace-id>"
+id = "placeholder-create-with-wrangler-kv-namespace-create-CACHE-production"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Development Settings

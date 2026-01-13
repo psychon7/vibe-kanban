@@ -1,95 +1,132 @@
-/**
- * Cloudflare Workers Environment Bindings
- * See wrangler.toml for configuration
- */
-export interface Env {
-  // D1 Database
-  DB: D1Database;
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { secureHeaders } from 'hono/secure-headers';
+import { prettyJSON } from 'hono/pretty-json';
+import { timing } from 'hono/timing';
 
-  // R2 Storage
-  STORAGE: R2Bucket;
+import type { Env, Variables } from './types/env';
+import { errorHandler, requestId } from './middleware';
 
-  // KV Namespace for caching and rate limiting
-  CACHE: KVNamespace;
+// Import routes
+import {
+  authRoutes,
+  usersRoutes,
+  workspacesRoutes,
+  projectsRoutes,
+  tasksRoutes,
+  promptsRoutes,
+  auditRoutes,
+} from './routes';
 
-  // AI Gateway binding (if configured)
-  AI_GATEWAY?: unknown;
+// Create the main Hono app
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
-  // Environment variables
-  ENVIRONMENT: string;
-  LOG_LEVEL: string;
+// ─────────────────────────────────────────────────────────────────────────────
+// Global Middleware
+// ─────────────────────────────────────────────────────────────────────────────
 
-  // Secrets (set via wrangler secret put)
-  OPENAI_API_KEY?: string;
-  ANTHROPIC_API_KEY?: string;
-  CF_ACCESS_CLIENT_ID?: string;
-  CF_ACCESS_CLIENT_SECRET?: string;
-}
+app.use('*', requestId());
+app.use('*', timing());
+app.use('*', logger());
+app.use('*', secureHeaders());
+app.use('*', prettyJSON());
 
-/**
- * Vibe Kanban API Worker
- * Main entry point for Cloudflare Workers
- */
-export default {
-  async fetch(
-    request: Request,
-    env: Env,
-    ctx: ExecutionContext
-  ): Promise<Response> {
-    const url = new URL(request.url);
-
-    // Health check endpoint
-    if (url.pathname === '/health') {
-      return new Response(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+// CORS configuration
+app.use('*', cors({
+  origin: (origin, c) => {
+    const allowedOrigin = c.env.CORS_ORIGIN;
+    // Allow configured origin and localhost for development
+    if (origin === allowedOrigin || origin?.startsWith('http://localhost')) {
+      return origin;
     }
-
-    // Database health check
-    if (url.pathname === '/health/db') {
-      try {
-        const result = await env.DB.prepare('SELECT 1 as db_check').first<{ db_check: number }>();
-        return new Response(JSON.stringify({ 
-          status: 'ok', 
-          database: 'connected',
-          result: result?.db_check 
-        }), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (error) {
-        return new Response(JSON.stringify({ 
-          status: 'error', 
-          database: 'disconnected',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    // API routes placeholder
-    if (url.pathname.startsWith('/api/')) {
-      return new Response(JSON.stringify({ 
-        message: 'API endpoint not implemented',
-        path: url.pathname 
-      }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Default response
-    return new Response(JSON.stringify({
-      name: 'vibe-kanban-api',
-      version: '0.0.1',
-      endpoints: [
-        'GET /health - Health check',
-        'GET /health/db - Database health check',
-        'GET /api/* - API endpoints'
-      ]
-    }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return allowedOrigin || '*';
   },
-};
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Workspace-Id', 'X-Request-Id'],
+  exposeHeaders: ['X-Request-Id', 'X-Response-Time'],
+  credentials: true,
+  maxAge: 86400,
+}));
+
+// Error handling
+app.onError(errorHandler);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Health Check Endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+
+app.get('/health', (c) => {
+  return c.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: c.env.ENVIRONMENT,
+  });
+});
+
+app.get('/health/db', async (c) => {
+  try {
+    const result = await c.env.DB.prepare('SELECT 1 as db_check').first<{ db_check: number }>();
+    return c.json({
+      status: 'ok',
+      database: 'connected',
+      result: result?.db_check,
+    });
+  } catch (error) {
+    return c.json({
+      status: 'error',
+      database: 'disconnected',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API Routes (v1)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const api = app.basePath('/api/v1');
+
+api.route('/auth', authRoutes);
+api.route('/users', usersRoutes);
+api.route('/workspaces', workspacesRoutes);
+api.route('/projects', projectsRoutes);
+api.route('/tasks', tasksRoutes);
+api.route('/prompts', promptsRoutes);
+api.route('/audit', auditRoutes);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Root Info & 404 Handler
+// ─────────────────────────────────────────────────────────────────────────────
+
+app.get('/', (c) => {
+  return c.json({
+    name: 'vibe-kanban-api',
+    version: '1.0.0',
+    environment: c.env.ENVIRONMENT,
+    docs: '/api/v1',
+    endpoints: {
+      health: '/health',
+      healthDb: '/health/db',
+      auth: '/api/v1/auth',
+      users: '/api/v1/users',
+      workspaces: '/api/v1/workspaces',
+      projects: '/api/v1/projects',
+      tasks: '/api/v1/tasks',
+      prompts: '/api/v1/prompts',
+      audit: '/api/v1/audit',
+    },
+  });
+});
+
+app.notFound((c) => {
+  return c.json({
+    error: {
+      code: 'NOT_FOUND',
+      message: `Route ${c.req.method} ${c.req.path} not found`,
+    },
+  }, 404);
+});
+
+// Export for Cloudflare Workers
+export default app;
