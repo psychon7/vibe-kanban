@@ -1,0 +1,36 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Vibe Kanban Frontend - Cloudflare Pages Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+# Deploy: wrangler pages deploy dist --project-name=vibe-kanban
+
+name = "vibe-kanban"
+compatibility_date = "2024-01-01"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Build Settings
+# ─────────────────────────────────────────────────────────────────────────────
+
+[build]
+command = "npm run build"
+output_directory = "dist"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Development Environment
+# ─────────────────────────────────────────────────────────────────────────────
+
+[vars]
+VITE_API_URL = "http://localhost:8787"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Preview Environment (staging branches)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[env.preview]
+vars = { VITE_API_URL = "https://vibe-kanban-api-staging.workers.dev" }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Production Environment (main branch)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[env.production]
+vars = { VITE_API_URL = "https://vibe-kanban-api.workers.dev" }

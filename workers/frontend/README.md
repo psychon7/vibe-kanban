@@ -1,73 +1,98 @@
-# React + TypeScript + Vite
+# Vibe Kanban Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite frontend for the Vibe Kanban application.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🔐 **Authentication**: Login/Signup with session-based auth
+- 🏢 **Workspaces**: Multi-workspace support with switching
+- 📋 **Projects**: Kanban board with task management
+- 👥 **Team Management**: Invite and manage members
+- 🤖 **AI Enhancement**: Prompt enhancement for tasks
+- 📝 **Templates**: Reusable prompt templates
+- ⚙️ **Settings**: AI settings and audit log viewer
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Development
 
-## Expanding the ESLint configuration
+```bash
+# Install dependencies
+npm install
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Start development server (with API proxy)
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The dev server runs at `http://localhost:5173` and proxies `/api` requests to the Workers backend at `http://localhost:8787`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Building
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+### Deployment
+
+#### Prerequisites
+
+1. Install Wrangler CLI: `npm install -g wrangler`
+2. Login to Cloudflare: `wrangler login`
+
+#### Deploy to Cloudflare Pages
+
+```bash
+# Preview deployment (staging)
+npm run deploy:preview
+
+# Production deployment
+npm run deploy:production
+```
+
+#### Manual deployment
+
+```bash
+# Build
+npm run build
+
+# Deploy to Pages
+wrangler pages deploy dist --project-name=vibe-kanban
+```
+
+## Project Structure
+
+```
+src/
+├── api/
+│   └── client.ts          # API client with all endpoints
+├── components/
+│   ├── Layout.tsx         # Main layout with navigation
+│   ├── members/           # Team member components
+│   ├── prompts/           # AI enhancement components
+│   ├── tasks/             # Task/Kanban components
+│   └── workspace/         # Workspace switcher
+├── contexts/
+│   ├── AuthContext.tsx    # Auth state management
+│   └── WorkspaceContext.tsx
+├── pages/
+│   ├── auth/              # Login/Signup pages
+│   ├── projects/          # Project board
+│   ├── settings/          # Settings pages
+│   └── DashboardPage.tsx  # Main dashboard
+├── App.tsx                # Routes and providers
+└── main.tsx               # Entry point
+```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API URL | `http://localhost:8787` |
+
+## Tech Stack
+
+- **Framework**: React 19 with TypeScript
+- **Routing**: React Router v7
+- **Styling**: Tailwind CSS v4
+- **Build**: Vite
+- **Hosting**: Cloudflare Pages
