@@ -5,6 +5,7 @@ import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import MembersPage from './pages/settings/MembersPage';
+import PromptTemplatesPage from './pages/settings/PromptTemplatesPage';
 import ProjectBoardPage from './pages/projects/ProjectBoardPage';
 import Layout from './components/Layout';
 
@@ -81,6 +82,16 @@ function AppRoutes() {
           <PrivateRoute>
             <Layout>
               <MembersPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings/prompt-templates"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <PromptTemplatesPage />
             </Layout>
           </PrivateRoute>
         }

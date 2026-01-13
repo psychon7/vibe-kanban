@@ -5,6 +5,7 @@ import type { Task } from '../../api/client';
 import AssigneeSelector from './AssigneeSelector';
 import VisibilityToggle from './VisibilityToggle';
 import PromptEnhancementDialog from '../prompts/PromptEnhancementDialog';
+import PromptTemplatePicker from '../prompts/PromptTemplatePicker';
 
 interface TaskModalProps {
   task?: Task | null;
@@ -156,17 +157,20 @@ export default function TaskModal({ task, projectId, onClose, onSaved }: TaskMod
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Description
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => setShowEnhanceDialog(true)}
-                        disabled={!description.trim()}
-                        className="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Enhance with AI
-                      </button>
+                      <div className="flex items-center space-x-3">
+                        <PromptTemplatePicker onSelect={(template) => setDescription(template)} />
+                        <button
+                          type="button"
+                          onClick={() => setShowEnhanceDialog(true)}
+                          disabled={!description.trim()}
+                          className="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Enhance with AI
+                        </button>
+                      </div>
                     </div>
                     <textarea
                       value={description}
