@@ -1,6 +1,7 @@
 packages:
   - frontend
   - remote-frontend
+  - workers
 
 onlyBuiltDependencies:
   - '@sentry/cli'
