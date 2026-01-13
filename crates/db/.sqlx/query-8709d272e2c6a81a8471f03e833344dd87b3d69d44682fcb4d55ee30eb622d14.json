@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO users (id, email, name, avatar_url, cf_access_id)\n            VALUES ($1, $2, $3, $4, $5)\n            ON CONFLICT (email) DO UPDATE SET\n                name = excluded.name,\n                avatar_url = COALESCE(excluded.avatar_url, users.avatar_url),\n                cf_access_id = COALESCE(excluded.cf_access_id, users.cf_access_id),\n                updated_at = datetime('now', 'subsec')\n            RETURNING\n                id as \"id!: Uuid\",\n                email,\n                name,\n                avatar_url,\n                cf_access_id,\n                created_at as \"created_at!: DateTime<Utc>\",\n                updated_at as \"updated_at!: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "email",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "avatar_url",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "cf_access_id",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "8709d272e2c6a81a8471f03e833344dd87b3d69d44682fcb4d55ee30eb622d14"
+}

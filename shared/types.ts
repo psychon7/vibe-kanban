@@ -108,6 +108,10 @@ export type MergeStatus = "open" | "merged" | "closed" | "unknown";
 
 export type PullRequestInfo = { number: bigint, url: string, status: MergeStatus, merged_at: string | null, merge_commit_sha: string | null, };
 
+export type User = { id: string, email: string, name: string, avatar_url: string | null, cf_access_id: string | null, created_at: Date, updated_at: Date, };
+
+export type UserSession = { id: string, user_id: string, cf_access_jwt_id: string | null, expires_at: Date, created_at: Date, last_used_at: Date, };
+
 export type ApprovalStatus = { "status": "pending" } | { "status": "approved" } | { "status": "denied", reason?: string, } | { "status": "timed_out" };
 
 export type CreateApprovalRequest = { tool_name: string, tool_input: JsonValue, tool_call_id: string, };
@@ -217,6 +221,14 @@ export type CheckEditorAvailabilityResponse = { available: boolean, };
 export type CheckAgentAvailabilityQuery = { executor: BaseCodingAgent, };
 
 export type CurrentUserResponse = { user_id: string, };
+
+export type AuthMeResponse = { user: UserResponse, session: SessionResponse, };
+
+export type UserResponse = { id: string, email: string, name: string, avatar_url: string | null, created_at: Date, };
+
+export type SessionResponse = { id: string, expires_at: Date, created_at: Date, };
+
+export type LogoutResponse = { success: boolean, message: string, };
 
 export type CreateFollowUpAttempt = { prompt: string, variant: string | null, retry_process_id: string | null, force_when_dirty: boolean | null, perform_git_reset: boolean | null, };
 
