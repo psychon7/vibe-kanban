@@ -5,6 +5,7 @@ import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import MembersPage from './pages/settings/MembersPage';
+import ProjectBoardPage from './pages/projects/ProjectBoardPage';
 import Layout from './components/Layout';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -60,6 +61,16 @@ function AppRoutes() {
           <PrivateRoute>
             <Layout>
               <DashboardPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <ProjectBoardPage />
             </Layout>
           </PrivateRoute>
         }
