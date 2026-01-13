@@ -4,6 +4,8 @@ import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import MembersPage from './pages/settings/MembersPage';
+import Layout from './components/Layout';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -56,7 +58,19 @@ function AppRoutes() {
         path="/"
         element={
           <PrivateRoute>
-            <DashboardPage />
+            <Layout>
+              <DashboardPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings/members"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <MembersPage />
+            </Layout>
           </PrivateRoute>
         }
       />
