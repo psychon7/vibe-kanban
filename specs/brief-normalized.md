@@ -11,10 +11,10 @@
 ## 1. Project Overview
 
 ### 1.1 Project Name
-**Vibe Kanban Desktop** - macOS Electron App with Team RBAC
+**Vibe Kanban Desktop** - macOS Tauri v2 App with Team RBAC
 
 ### 1.2 Purpose
-Transform Vibe Kanban (an AI coding agent orchestration tool) into a macOS Electron desktop application with team-based role access control (RBAC), task assignment capabilities, and AI-powered prompt enhancement.
+Transform Vibe Kanban (an AI coding agent orchestration tool) into a macOS Tauri v2 desktop application with team-based role access control (RBAC), task assignment capabilities, and AI-powered prompt enhancement.
 
 ### 1.3 Repository Origin
 Forked from [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban)
@@ -24,7 +24,7 @@ Forked from [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban)
 ## 2. Goals and Non-Goals
 
 ### 2.1 Goals (In Scope)
-1. **Electron Desktop App** — Package as a native macOS desktop application
+1. **Tauri v2 Desktop App** — Package as a native macOS desktop application
 2. **Multi-User Team Workflow** — Support workspace-based tenancy for teams
 3. **Role-Based Access Control (RBAC)** — Implement Owner/Admin/Member/Viewer roles
 4. **Task Assignment** — Enable task assignment with permissioned visibility
@@ -95,7 +95,7 @@ Forked from [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban)
 ## 5. Key Workflows
 
 ### 5.1 User Onboarding Flow
-1. User launches Electron app for the first time
+1. User launches Tauri app for the first time
 2. App prompts for account creation (local auth)
 3. First user becomes Owner of default workspace
 4. User can invite team members via email
@@ -166,7 +166,7 @@ Forked from [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban)
 - Configurable provider selection per workspace
 
 ### 7.2 System Integrations
-- **macOS Keychain** — Secure credential storage via Electron safe storage
+- **macOS Keychain** — Secure credential storage via Tauri v2 secure storage
 - **Finder** — "Open project folder" integration
 - **System Notifications** — Native macOS notifications
 
@@ -225,7 +225,7 @@ Forked from [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban)
 ### Phase 0: Baseline Setup
 Understand and run the existing codebase
 
-### Phase 1: Electron Wrapper
+### Phase 1: Tauri v2 Wrapper
 Package as macOS desktop app (no RBAC yet)
 
 ### Phase 2: Auth + Workspace Primitives
@@ -238,7 +238,7 @@ Invite, remove, change roles, workspace switcher UI
 Assignee field, visibility controls, access middleware
 
 ### Phase 5: Audit Trail + Polish
-Operation logging, audit viewer, Electron enhancements
+Operation logging, audit viewer, Tauri enhancements
 
 ### Phase 6: AI Prompt Enhancement
 LLM integration, prompt templates, quality scoring
@@ -252,7 +252,7 @@ LLM integration, prompt templates, quality scoring
 | SQLite concurrency/locking | High | Enable WAL mode, keep transactions short |
 | Scope creep to cloud sync | High | Keep v1 as shared-instance only |
 | Agent safety vs RBAC | High | Guard `attempt.run` and agent config access |
-| Electron binary size | Medium | Use electron-builder optimization |
+| Tauri binary size | Low | Tauri produces small binaries (~10MB vs ~150MB) |
 | Cross-platform later | Low | Focus on macOS first, abstract paths |
 
 ---
@@ -267,4 +267,4 @@ LLM integration, prompt templates, quality scoring
 
 4. **Backup Strategy:** Should the app auto-backup the SQLite database? Where?
 
-5. **Update Mechanism:** How will the Electron app receive updates? (Auto-update vs manual download)
+5. **Update Mechanism:** How will the Tauri app receive updates? (Tauri built-in updater vs manual download)

@@ -405,7 +405,7 @@ impl ModelGateway {
 
 ### 2.5 Credential Management
 
-**Storage:** macOS Keychain via Electron safe storage
+**Storage:** macOS Keychain via Tauri v2 secure storage
 
 ```rust
 pub struct CredentialManager {

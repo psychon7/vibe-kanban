@@ -145,7 +145,7 @@ Uncertainties and items requiring clarification before implementation.
 | Phase | Focus | Primary Docs |
 |-------|-------|--------------|
 | 0 | Baseline Setup | brief-normalized.md |
-| 1 | Electron Wrapper | backend-specs.md (deployment) |
+| 1 | Tauri v2 Wrapper | backend-specs.md (deployment) |
 | 2 | Auth + Workspace Primitives | backend-specs.md, api-docs.md |
 | 3 | Workspace & Member Management | frontend-specs.md, api-docs.md |
 | 4 | Task Assignment + Permissions | all specs |

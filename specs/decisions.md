@@ -32,7 +32,7 @@ This document records the architectural decisions made during specification gene
 **Status:** Accepted
 
 **Context:**
-Need to choose infrastructure for hosting the application. Options include traditional cloud (AWS, GCP), Electron desktop, or edge computing platforms.
+Need to choose infrastructure for hosting the application. Options include traditional cloud (AWS, GCP), Tauri v2 desktop, or edge computing platforms.
 
 **Decision:**
 Use Cloudflare's full platform stack:
@@ -53,7 +53,7 @@ Use Cloudflare's full platform stack:
 - **Developer experience** - Wrangler CLI, preview deployments
 
 **Alternatives Considered:**
-- Electron + Rust + SQLite: Complex packaging, no collaboration
+- Tauri v2 + Rust + SQLite: Good for desktop-only, but limits collaboration
 - AWS/GCP: More complex, higher cost, more setup
 - Vercel + Supabase: Good alternative, but less integrated
 
