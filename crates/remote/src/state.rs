@@ -5,6 +5,7 @@ use sqlx::PgPool;
 use crate::{
     auth::{JwtService, OAuthHandoffService, OAuthTokenValidator, ProviderRegistry},
     config::RemoteServerConfig,
+    files::FilesService,
     github_app::GitHubAppService,
     mail::Mailer,
     r2::R2Service,
@@ -21,6 +22,7 @@ pub struct AppState {
     handoff: Arc<OAuthHandoffService>,
     oauth_token_validator: Arc<OAuthTokenValidator>,
     r2: Option<R2Service>,
+    files: Option<FilesService>,
     github_app: Option<Arc<GitHubAppService>>,
 }
 
@@ -36,6 +38,7 @@ impl AppState {
         server_public_base_url: String,
         http_client: reqwest::Client,
         r2: Option<R2Service>,
+        files: Option<FilesService>,
         github_app: Option<Arc<GitHubAppService>>,
     ) -> Self {
         Self {
@@ -48,6 +51,7 @@ impl AppState {
             handoff,
             oauth_token_validator,
             r2,
+            files,
             github_app,
         }
     }
@@ -78,6 +82,10 @@ impl AppState {
 
     pub fn r2(&self) -> Option<&R2Service> {
         self.r2.as_ref()
+    }
+
+    pub fn files(&self) -> Option<&FilesService> {
+        self.files.as_ref()
     }
 
     pub fn github_app(&self) -> Option<&GitHubAppService> {

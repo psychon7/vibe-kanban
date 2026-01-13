@@ -1,0 +1,224 @@
+# Cloudflare R2 File Storage Configuration
+
+This guide explains how to configure Cloudflare R2 for file storage in vibe-kanban, including avatar uploads.
+
+## Overview
+
+Vibe-kanban uses Cloudflare R2 for two purposes:
+1. **Review Storage** - Storing code review payloads (existing)
+2. **File Storage** - Storing user files like avatars (new)
+
+## Setting Up R2 Bucket for Files
+
+### 1. Create R2 Bucket in Cloudflare Dashboard
+
+1. Log into your Cloudflare account
+2. Navigate to **R2 Object Storage**
+3. Click **Create Bucket**
+4. Name your bucket (e.g., `vibe-kanban-files`)
+5. Select your preferred location
+
+### 2. Configure Public Access (Optional but Recommended for Avatars)
+
+For avatars to be publicly accessible without presigned URLs:
+
+1. In your bucket settings, go to **Settings** → **Public Access**
+2. Enable **Public Access**
+3. Note the public URL (e.g., `https://pub-xxxxx.r2.dev`)
+
+Alternatively, you can use a custom domain:
+1. Go to **Settings** → **Custom Domains**
+2. Add your domain (e.g., `files.yourdomain.com`)
+
+### 3. Create API Tokens
+
+1. Go to **R2** → **Overview** → **Manage R2 API Tokens**
+2. Click **Create API Token**
+3. Give it a descriptive name (e.g., `vibe-kanban-files`)
+4. Set permissions:
+   - **Object Read & Write** for your files bucket
+5. Note down the **Access Key ID** and **Secret Access Key**
+
+### 4. Environment Variables
+
+Add these environment variables to your `.env.remote` file:
+
+```bash
+# Files R2 Storage Configuration
+R2_FILES_ACCESS_KEY_ID=your_access_key_id
+R2_FILES_SECRET_ACCESS_KEY=your_secret_access_key
+R2_FILES_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+R2_FILES_BUCKET=vibe-kanban-files
+R2_FILES_PUBLIC_URL=https://pub-xxxxx.r2.dev  # or your custom domain
+
+# Optional configurations
+R2_FILES_PRESIGN_EXPIRY_SECS=300  # Default: 300 (5 minutes)
+R2_FILES_MAX_SIZE_BYTES=5242880   # Default: 5MB (5 * 1024 * 1024)
+```
+
+## CORS Configuration
+
+For frontend direct uploads to work, configure CORS on your R2 bucket:
+
+1. Go to your bucket → **Settings** → **CORS Policy**
+2. Add the following configuration:
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "https://yourdomain.com",
+      "http://localhost:5173"
+    ],
+    "AllowedMethods": [
+      "GET",
+      "PUT",
+      "DELETE"
+    ],
+    "AllowedHeaders": [
+      "*"
+    ],
+    "ExposeHeaders": [
+      "ETag",
+      "Content-Length"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+## Lifecycle Rules for Temporary Files
+
+To automatically clean up orphaned or temporary uploads, configure lifecycle rules:
+
+1. Go to your bucket → **Settings** → **Lifecycle Rules**
+2. Add rules as needed:
+
+### Example: Delete temporary files after 24 hours
+```json
+{
+  "Rules": [
+    {
+      "ID": "delete-temp-files",
+      "Filter": {
+        "Prefix": "temp/"
+      },
+      "Status": "Enabled",
+      "Expiration": {
+        "Days": 1
+      }
+    }
+  ]
+}
+```
+
+### Example: Delete old avatar versions after 30 days
+```json
+{
+  "Rules": [
+    {
+      "ID": "cleanup-old-avatars",
+      "Filter": {
+        "Prefix": "avatars/"
+      },
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 30
+      }
+    }
+  ]
+}
+```
+
+## API Endpoints
+
+### File Upload Flow
+
+1. **Request Upload URL**
+   ```http
+   POST /v1/files/avatars/upload
+   Authorization: Bearer <token>
+   Content-Type: application/json
+
+   {
+     "content_type": "image/jpeg",
+     "content_length": 102400  // optional, for validation
+   }
+   ```
+
+   Response:
+   ```json
+   {
+     "upload_url": "https://...",
+     "object_key": "avatars/{user_id}/{file_id}.jpg",
+     "public_url": "https://files.example.com/avatars/{user_id}/{file_id}.jpg",
+     "expires_at": "2024-01-01T00:05:00Z"
+   }
+   ```
+
+2. **Upload File Directly to R2**
+   ```http
+   PUT {upload_url}
+   Content-Type: image/jpeg
+   
+   <binary file data>
+   ```
+
+3. **Update User Avatar**
+   ```http
+   PATCH /v1/identity/avatar
+   Authorization: Bearer <token>
+   Content-Type: application/json
+
+   {
+     "avatar_url": "https://files.example.com/avatars/{user_id}/{file_id}.jpg"
+   }
+   ```
+
+### Other Endpoints
+
+- `GET /v1/files/avatars` - List user's avatars
+- `DELETE /v1/files/avatars` - Delete all user's avatars
+- `DELETE /v1/files/avatars/{key}` - Delete specific avatar
+- `GET /v1/files/config` - Get file storage configuration
+
+## File Validation
+
+The following validations are applied:
+
+### Allowed File Types (Avatars)
+- `image/jpeg`
+- `image/png`
+- `image/gif`
+- `image/webp`
+
+### File Size Limits
+- Default: 5MB
+- Configurable via `R2_FILES_MAX_SIZE_BYTES`
+
+## Security Considerations
+
+1. **Presigned URLs expire** - Upload URLs are valid for a limited time (default: 5 minutes)
+2. **User isolation** - Users can only manage files in their own `avatars/{user_id}/` folder
+3. **Content-Type validation** - Only allowed image types are accepted
+4. **Size validation** - Files exceeding the maximum size are rejected
+
+## Troubleshooting
+
+### "Files storage not configured"
+Ensure all required environment variables are set:
+- `R2_FILES_ACCESS_KEY_ID`
+- `R2_FILES_SECRET_ACCESS_KEY`
+- `R2_FILES_ENDPOINT`
+- `R2_FILES_BUCKET`
+- `R2_FILES_PUBLIC_URL`
+
+### CORS Errors
+1. Check your bucket's CORS configuration
+2. Ensure your frontend origin is in `AllowedOrigins`
+3. Verify the HTTP methods are allowed
+
+### Upload Fails with 403
+1. Check API token permissions
+2. Verify the presigned URL hasn't expired
+3. Ensure the Content-Type header matches the requested type

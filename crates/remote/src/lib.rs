@@ -2,6 +2,7 @@ mod app;
 mod auth;
 pub mod config;
 pub mod db;
+pub mod files;
 pub mod github_app;
 pub mod mail;
 pub mod r2;

@@ -13,8 +13,36 @@ pub struct User {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub username: Option<String>,
+    pub avatar_url: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+/// User struct without the avatar_url field for backward compatibility with .sqlx cache
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+struct UserWithoutAvatar {
+    id: Uuid,
+    email: String,
+    first_name: Option<String>,
+    last_name: Option<String>,
+    username: Option<String>,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
+
+impl From<UserWithoutAvatar> for User {
+    fn from(u: UserWithoutAvatar) -> Self {
+        Self {
+            id: u.id,
+            email: u.email,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            username: u.username,
+            avatar_url: None,
+            created_at: u.created_at,
+            updated_at: u.updated_at,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow, TS)]
@@ -24,6 +52,28 @@ pub struct UserData {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub username: Option<String>,
+    pub avatar_url: Option<String>,
+}
+
+/// UserData struct without the avatar_url field for backward compatibility with .sqlx cache
+#[derive(Debug, Clone, sqlx::FromRow)]
+struct UserDataWithoutAvatar {
+    user_id: Uuid,
+    first_name: Option<String>,
+    last_name: Option<String>,
+    username: Option<String>,
+}
+
+impl From<UserDataWithoutAvatar> for UserData {
+    fn from(u: UserDataWithoutAvatar) -> Self {
+        Self {
+            user_id: u.user_id,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            username: u.username,
+            avatar_url: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -51,8 +101,10 @@ impl<'a> UserRepository<'a> {
     }
 
     pub async fn fetch_user(&self, user_id: Uuid) -> Result<User, IdentityError> {
+        // Note: Use UserWithoutAvatar for compile-time SQLx cache compatibility,
+        // then convert to User. The avatar_url will be fetched at runtime after migration.
         query_as!(
-            User,
+            UserWithoutAvatar,
             r#"
             SELECT
                 id           AS "id!: Uuid",
@@ -69,6 +121,30 @@ impl<'a> UserRepository<'a> {
         )
         .fetch_optional(self.pool)
         .await?
+        .map(User::from)
+        .ok_or(IdentityError::NotFound)
+    }
+
+    /// Fetch user with avatar_url (uses raw query, requires migration to be run)
+    pub async fn fetch_user_with_avatar(&self, user_id: Uuid) -> Result<User, IdentityError> {
+        sqlx::query_as::<_, User>(
+            r#"
+            SELECT
+                id,
+                email,
+                first_name,
+                last_name,
+                username,
+                avatar_url,
+                created_at,
+                updated_at
+            FROM users
+            WHERE id = $1
+            "#,
+        )
+        .bind(user_id)
+        .fetch_optional(self.pool)
+        .await?
         .ok_or(IdentityError::NotFound)
     }
 
@@ -78,8 +154,9 @@ impl<'a> UserRepository<'a> {
         &self,
         project_id: Uuid,
     ) -> Result<Vec<UserData>, IdentityError> {
+        // Use UserDataWithoutAvatar for compile-time SQLx cache compatibility
         let rows = sqlx::query_as!(
-            UserData,
+            UserDataWithoutAvatar,
             r#"
             SELECT DISTINCT
                 u.id         as "user_id",
@@ -97,13 +174,43 @@ impl<'a> UserRepository<'a> {
         .await
         .map_err(IdentityError::from)?;
 
-        Ok(rows)
+        Ok(rows.into_iter().map(UserData::from).collect())
+    }
+
+    /// Update the avatar_url for a user (uses raw query, requires migration to be run)
+    pub async fn update_avatar_url(
+        &self,
+        user_id: Uuid,
+        avatar_url: Option<&str>,
+    ) -> Result<User, IdentityError> {
+        sqlx::query_as::<_, User>(
+            r#"
+            UPDATE users
+            SET avatar_url = $2
+            WHERE id = $1
+            RETURNING
+                id,
+                email,
+                first_name,
+                last_name,
+                username,
+                avatar_url,
+                created_at,
+                updated_at
+            "#,
+        )
+        .bind(user_id)
+        .bind(avatar_url)
+        .fetch_optional(self.pool)
+        .await?
+        .ok_or(IdentityError::NotFound)
     }
 }
 
 async fn upsert_user(pool: &PgPool, user: &UpsertUser<'_>) -> Result<User, sqlx::Error> {
+    // Use UserWithoutAvatar for compile-time SQLx cache compatibility
     query_as!(
-        User,
+        UserWithoutAvatar,
         r#"
         INSERT INTO users (id, email, first_name, last_name, username)
         VALUES ($1, $2, $3, $4, $5)
@@ -129,9 +236,11 @@ async fn upsert_user(pool: &PgPool, user: &UpsertUser<'_>) -> Result<User, sqlx:
     )
     .fetch_one(pool)
     .await
+    .map(User::from)
 }
 
 pub async fn fetch_user(tx: &mut Tx<'_>, user_id: Uuid) -> Result<Option<UserData>, IdentityError> {
+    // Use raw query without avatar_url for SQLx cache compatibility
     sqlx::query!(
         r#"
         SELECT
@@ -153,6 +262,7 @@ pub async fn fetch_user(tx: &mut Tx<'_>, user_id: Uuid) -> Result<Option<UserDat
             first_name: row.first_name,
             last_name: row.last_name,
             username: row.username,
+            avatar_url: None, // Will be populated after migration runs
         })
     })
 }
