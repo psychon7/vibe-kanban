@@ -4,6 +4,7 @@ import { api } from '../../api/client';
 import type { Task } from '../../api/client';
 import AssigneeSelector from './AssigneeSelector';
 import VisibilityToggle from './VisibilityToggle';
+import PromptEnhancementDialog from '../prompts/PromptEnhancementDialog';
 
 interface TaskModalProps {
   task?: Task | null;
@@ -36,6 +37,7 @@ export default function TaskModal({ task, projectId, onClose, onSaved }: TaskMod
   const [dueDate, setDueDate] = useState(task?.due_date?.split('T')[0] || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showEnhanceDialog, setShowEnhanceDialog] = useState(false);
 
   const isEditing = !!task;
 
@@ -150,9 +152,22 @@ export default function TaskModal({ task, projectId, onClose, onSaved }: TaskMod
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Description
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Description
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowEnhanceDialog(true)}
+                        disabled={!description.trim()}
+                        className="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Enhance with AI
+                      </button>
+                    </div>
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
@@ -275,6 +290,17 @@ export default function TaskModal({ task, projectId, onClose, onSaved }: TaskMod
           </form>
         </div>
       </div>
+
+      {showEnhanceDialog && (
+        <PromptEnhancementDialog
+          originalPrompt={description}
+          onAccept={(enhanced) => {
+            setDescription(enhanced);
+            setShowEnhanceDialog(false);
+          }}
+          onClose={() => setShowEnhanceDialog(false)}
+        />
+      )}
     </div>
   );
 }

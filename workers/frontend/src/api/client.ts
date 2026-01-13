@@ -262,6 +262,82 @@ class ApiClient {
       body: JSON.stringify({ user_id: userId }),
     });
   }
+
+  // Prompt enhancement endpoints
+  async enhancePrompt(
+    prompt: string,
+    style: 'minimal' | 'balanced' | 'comprehensive' = 'balanced',
+    context?: string
+  ): Promise<PromptEnhancementResult> {
+    return this.request<PromptEnhancementResult>('/prompts/enhance', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, style, context }),
+    });
+  }
+
+  async scorePrompt(prompt: string): Promise<PromptScoreResult> {
+    return this.request<PromptScoreResult>('/prompts/score', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    });
+  }
+
+  async submitEnhancementFeedback(
+    enhancementId: string,
+    accepted: boolean,
+    rating?: number
+  ): Promise<void> {
+    await this.request(`/prompts/enhance/${enhancementId}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify({ accepted, rating }),
+    });
+  }
+
+  // Prompt template endpoints
+  async listPromptTemplates(category?: string): Promise<{ templates: PromptTemplate[] }> {
+    const query = category ? `?category=${category}` : '';
+    return this.request<{ templates: PromptTemplate[] }>(`/prompts/templates${query}`);
+  }
+
+  async getPromptTemplate(id: string): Promise<{ template: PromptTemplate; placeholders: string[] }> {
+    return this.request<{ template: PromptTemplate; placeholders: string[] }>(`/prompts/templates/${id}`);
+  }
+
+  async renderPromptTemplate(id: string, variables: Record<string, string>): Promise<{ rendered: string }> {
+    return this.request<{ rendered: string }>(`/prompts/templates/${id}/render`, {
+      method: 'POST',
+      body: JSON.stringify({ variables }),
+    });
+  }
+}
+
+export interface PromptEnhancementResult {
+  enhancement: {
+    id: string;
+    original_prompt: string;
+    enhanced_prompt: string;
+    style: string;
+    quality_score_before: number;
+    quality_score_after: number;
+    model: string;
+  };
+  feedback: string[];
+}
+
+export interface PromptScoreResult {
+  score: number;
+  feedback: string[];
+}
+
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  template: string;
+  category: string;
+  is_global: boolean;
+  usage_count: number;
+  created_at: string;
 }
 
 export const api = new ApiClient();
