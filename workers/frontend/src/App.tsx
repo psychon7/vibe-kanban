@@ -6,6 +6,7 @@ import SignupPage from './pages/auth/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import MembersPage from './pages/settings/MembersPage';
 import PromptTemplatesPage from './pages/settings/PromptTemplatesPage';
+import PromptSettingsPage from './pages/settings/PromptSettingsPage';
 import ProjectBoardPage from './pages/projects/ProjectBoardPage';
 import Layout from './components/Layout';
 
@@ -92,6 +93,16 @@ function AppRoutes() {
           <PrivateRoute>
             <Layout>
               <PromptTemplatesPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings/prompt-settings"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <PromptSettingsPage />
             </Layout>
           </PrivateRoute>
         }

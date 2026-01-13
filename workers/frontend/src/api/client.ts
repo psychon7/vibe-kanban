@@ -69,6 +69,19 @@ export interface Task {
   due_date?: string;
 }
 
+export interface PromptEnhancementSettings {
+  id: string;
+  workspace_id: string;
+  auto_enhance_enabled: boolean;
+  preferred_model: string;
+  enhancement_style: 'minimal' | 'balanced' | 'comprehensive';
+  include_codebase_context: boolean;
+  include_git_history: boolean;
+  custom_instructions?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 class ApiClient {
   private token: string | null = null;
   private workspaceId: string | null = null;
@@ -180,6 +193,21 @@ class ApiClient {
 
   async removeWorkspaceMember(workspaceId: string, userId: string): Promise<void> {
     await this.request(`/workspaces/${workspaceId}/members/${userId}`, { method: 'DELETE' });
+  }
+
+  // Workspace prompt settings
+  async getPromptSettings(workspaceId: string): Promise<{ settings: PromptEnhancementSettings }> {
+    return this.request<{ settings: PromptEnhancementSettings }>(`/workspaces/${workspaceId}/prompt-settings`);
+  }
+
+  async updatePromptSettings(
+    workspaceId: string,
+    settings: Partial<PromptEnhancementSettings>
+  ): Promise<{ settings: PromptEnhancementSettings }> {
+    return this.request<{ settings: PromptEnhancementSettings }>(`/workspaces/${workspaceId}/prompt-settings`, {
+      method: 'PATCH',
+      body: JSON.stringify(settings),
+    });
   }
 
   // Project endpoints
@@ -310,6 +338,9 @@ class ApiClient {
     });
   }
 }
+
+export const apiClient = new ApiClient();
+export default apiClient;
 
 export interface PromptEnhancementResult {
   enhancement: {
