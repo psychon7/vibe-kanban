@@ -1,0 +1,44 @@
+name = "vibe-kanban-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Development settings
+[dev]
+port = 8787
+local_protocol = "http"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "vibe-kanban-db"
+database_id = "" # Will be populated after creating D1 database
+migrations_dir = "migrations"
+
+# R2 Storage binding
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "vibe-kanban-files"
+
+# KV Namespace for sessions and caching
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "" # Will be populated after creating KV namespace
+
+# AI Gateway binding (for LLM integration)
+[ai]
+binding = "AI"
+
+# Environment variables (non-secret)
+[vars]
+ENVIRONMENT = "development"
+APP_NAME = "Vibe Kanban"
+CORS_ORIGIN = "http://localhost:5173"
+
+# Production environment
+[env.production]
+vars = { ENVIRONMENT = "production", CORS_ORIGIN = "https://vibe-kanban.pages.dev" }
+
+# Staging environment
+[env.staging]
+vars = { ENVIRONMENT = "staging", CORS_ORIGIN = "https://staging.vibe-kanban.pages.dev" }
