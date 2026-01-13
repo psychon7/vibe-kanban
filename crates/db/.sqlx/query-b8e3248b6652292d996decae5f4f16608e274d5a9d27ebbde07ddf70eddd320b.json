@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT DISTINCT p.key\n               FROM workspace_members wm\n               INNER JOIN role_permissions rp ON wm.role_id = rp.role_id\n               INNER JOIN permissions p ON rp.permission_id = p.id\n               WHERE wm.workspace_team_id = $1 AND wm.user_id = $2\n               ORDER BY p.key",
+  "describe": {
+    "columns": [
+      {
+        "name": "key",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b8e3248b6652292d996decae5f4f16608e274d5a9d27ebbde07ddf70eddd320b"
+}

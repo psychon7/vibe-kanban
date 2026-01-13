@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT EXISTS(\n                SELECT 1\n                FROM role_permissions rp\n                INNER JOIN permissions p ON rp.permission_id = p.id\n                WHERE rp.role_id = $1 AND p.key = $2\n            ) as \"exists!: bool\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "exists!: bool",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f00f39a131a681d9d1f4b2b244c0fc6bd2bef3aa946a2234a5ef5236e268007c"
+}

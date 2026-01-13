@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT wm.id as \"id!: Uuid\",\n                      wm.workspace_team_id as \"workspace_team_id!: Uuid\",\n                      wm.user_id,\n                      wm.role_id as \"role_id!: Uuid\",\n                      wm.invited_by,\n                      wm.joined_at as \"joined_at!: DateTime<Utc>\",\n                      wm.created_at as \"created_at!: DateTime<Utc>\",\n                      wm.updated_at as \"updated_at!: DateTime<Utc>\",\n                      r.name as role_name\n               FROM workspace_members wm\n               INNER JOIN roles r ON wm.role_id = r.id\n               WHERE wm.workspace_team_id = $1\n               ORDER BY wm.joined_at ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "workspace_team_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "user_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "role_id!: Uuid",
+        "ordinal": 3,
+        "type_info": "Blob"
+      },
+      {
+        "name": "invited_by",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "joined_at!: DateTime<Utc>",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "role_name",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "2626db97343fd0f99039cbb1b623e5573803efc385b645dd92329d78ddaf3ed9"
+}

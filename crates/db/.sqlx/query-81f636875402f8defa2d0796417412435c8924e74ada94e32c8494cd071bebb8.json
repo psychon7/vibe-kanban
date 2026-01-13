@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT p.key\n               FROM permissions p\n               INNER JOIN role_permissions rp ON p.id = rp.permission_id\n               WHERE rp.role_id = $1\n               ORDER BY p.key",
+  "describe": {
+    "columns": [
+      {
+        "name": "key",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "81f636875402f8defa2d0796417412435c8924e74ada94e32c8494cd071bebb8"
+}

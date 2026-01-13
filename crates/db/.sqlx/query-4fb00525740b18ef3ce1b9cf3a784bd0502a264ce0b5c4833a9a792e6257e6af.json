@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT wt.id as \"id!: Uuid\",\n                      wt.name,\n                      wt.description,\n                      wt.created_at as \"created_at!: DateTime<Utc>\",\n                      wt.updated_at as \"updated_at!: DateTime<Utc>\"\n               FROM workspace_teams wt\n               INNER JOIN workspace_members wm ON wt.id = wm.workspace_team_id\n               WHERE wm.user_id = $1\n               ORDER BY wt.created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 4,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "4fb00525740b18ef3ce1b9cf3a784bd0502a264ce0b5c4833a9a792e6257e6af"
+}
