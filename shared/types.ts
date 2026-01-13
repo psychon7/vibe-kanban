@@ -82,6 +82,28 @@ export type Workspace = { id: string, task_id: string, container_ref: string | n
 
 export type WorkspaceWithStatus = { is_running: boolean, is_errored: boolean, id: string, task_id: string, container_ref: string | null, branch: string, agent_working_dir: string | null, setup_completed_at: string | null, created_at: string, updated_at: string, archived: boolean, pinned: boolean, name: string | null, };
 
+export type WorkspaceTeam = { id: string, name: string, description: string | null, created_at: Date, updated_at: Date, };
+
+export type CreateWorkspaceTeam = { name: string, description: string | null, };
+
+export type UpdateWorkspaceTeam = { name: string | null, description: string | null, };
+
+export type Role = { id: string, name: string, description: string | null, is_system: boolean, created_at: Date, updated_at: Date, };
+
+export type CreateRole = { name: string, description: string | null, };
+
+export type UpdateRole = { name: string | null, description: string | null, };
+
+export type Permission = { id: string, key: string, description: string | null, created_at: Date, };
+
+export type WorkspaceMember = { id: string, workspace_team_id: string, user_id: string, role_id: string, invited_by: string | null, joined_at: Date, created_at: Date, updated_at: Date, };
+
+export type WorkspaceMemberWithRole = { role_name: string, id: string, workspace_team_id: string, user_id: string, role_id: string, invited_by: string | null, joined_at: Date, created_at: Date, updated_at: Date, };
+
+export type CreateWorkspaceMember = { user_id: string, role_id: string, invited_by: string | null, };
+
+export type UpdateWorkspaceMember = { role_id: string | null, };
+
 export type Session = { id: string, workspace_id: string, executor: string | null, created_at: string, updated_at: string, };
 
 export type ExecutionProcess = { id: string, session_id: string, run_reason: ExecutionProcessRunReason, executor_action: ExecutorAction, status: ExecutionProcessStatus, exit_code: bigint | null, 
