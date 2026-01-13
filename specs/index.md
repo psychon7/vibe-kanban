@@ -2,7 +2,7 @@
 
 > **Project:** Vibe Kanban
 > **Version:** 1.0 (Draft)
-> **Last Updated:** 2026-01-13
+> **Last Updated:** 2026-01-14
 > **Platform:** Cloudflare (Pages, Workers, D1, R2, Access, AI Gateway)
 
 ---
@@ -19,7 +19,7 @@ Vibe Kanban is a **web application** for AI coding agent orchestration, featurin
 | API | Cloudflare Workers (Hono) |
 | Database | Cloudflare D1 (SQLite) |
 | Storage | Cloudflare R2 |
-| Auth | Cloudflare Access (Zero Trust) |
+| Auth | Session-based (Cloudflare KV) |
 | AI | Cloudflare AI Gateway |
 | Cache | Cloudflare Workers KV |
 
@@ -49,7 +49,7 @@ Structured version of the original product brief with goals, users, workflows, a
 - Modified entities: Task (assignment, visibility), Project (team ownership)
 - AI entities: PromptEnhancement, PromptTemplate, PromptEnhancementSettings
 - Complete SQL migration scripts
-- Authentication strategy (local auth, macOS Keychain)
+- Authentication strategy (session-based with KV storage)
 - Authorization middleware design
 - Service layer architecture
 - Error code taxonomy
@@ -142,15 +142,17 @@ Uncertainties and items requiring clarification before implementation.
 
 ## Implementation Phases
 
-| Phase | Focus | Primary Docs |
-|-------|-------|--------------|
-| 0 | Baseline Setup | brief-normalized.md |
-| 1 | Tauri v2 Wrapper | backend-specs.md (deployment) |
-| 2 | Auth + Workspace Primitives | backend-specs.md, api-docs.md |
-| 3 | Workspace & Member Management | frontend-specs.md, api-docs.md |
-| 4 | Task Assignment + Permissions | all specs |
-| 5 | Audit Trail + Polish | backend-specs.md, frontend-specs.md |
-| 6 | AI Prompt Enhancement | ai-services.md, frontend-specs.md |
+| Phase | Focus | Primary Docs | Status |
+|-------|-------|--------------|--------|
+| 0 | Baseline Setup | brief-normalized.md | ✅ Complete |
+| 1 | Workers API Backend | backend-specs.md, api-docs.md | ✅ Complete |
+| 2 | Auth + Workspace Primitives | backend-specs.md, api-docs.md | ✅ Complete |
+| 3 | Workspace & Member Management | frontend-specs.md, api-docs.md | ✅ API Complete |
+| 4 | Task Assignment + Permissions | all specs | ✅ API Complete |
+| 5 | Audit Trail | backend-specs.md, frontend-specs.md | ✅ API Complete |
+| 6 | AI Prompt Enhancement | ai-services.md, frontend-specs.md | ✅ API Complete |
+| 7 | Cloudflare Deployment | - | 🔲 Pending |
+| 8 | Frontend Integration | frontend-specs.md | 🔲 Pending |
 
 ---
 
@@ -170,16 +172,16 @@ Uncertainties and items requiring clarification before implementation.
 | PromptEnhancement | prompt_enhancements | Enhanced prompt record |
 | PromptTemplate | prompt_templates | Reusable prompt template |
 
-### API Base Paths
+### API Base Paths (Workers API)
 | Domain | Base Path |
 |--------|-----------|
-| Authentication | /api/auth |
-| Users | /api/users |
-| Team Workspaces | /api/workspaces-team |
-| Projects | /api/projects |
-| Tasks | /api/tasks |
-| Prompts | /api/prompts |
-| Templates | /api/prompt-templates |
+| Authentication | /api/v1/auth |
+| Users | /api/v1/users |
+| Team Workspaces | /api/v1/workspaces |
+| Projects | /api/v1/projects |
+| Tasks | /api/v1/tasks |
+| Prompts | /api/v1/prompts |
+| Audit | /api/v1/audit |
 
 ### Permission Keys
 | Permission | Owner | Admin | Member | Viewer |
