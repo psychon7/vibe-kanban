@@ -82,6 +82,33 @@ export interface PromptEnhancementSettings {
   updated_at: string;
 }
 
+export interface AuditLogEntry {
+  id: string;
+  workspace_id: string;
+  actor_id: string;
+  actor_email?: string;
+  actor_name?: string;
+  action: string;
+  entity_type: string;
+  entity_id?: string;
+  entity_name?: string;
+  payload?: Record<string, unknown>;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
+export interface AuditLogFilters {
+  entity_type?: string;
+  action?: string;
+  actor_id?: string;
+  start_date?: string;
+  end_date?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
 class ApiClient {
   private token: string | null = null;
   private workspaceId: string | null = null;
@@ -208,6 +235,40 @@ class ApiClient {
       method: 'PATCH',
       body: JSON.stringify(settings),
     });
+  }
+
+  // Audit log endpoints
+  async listAuditLogs(filters?: AuditLogFilters): Promise<{
+    logs: AuditLogEntry[];
+    total: number;
+    page: number;
+    limit: number;
+    has_more: boolean;
+  }> {
+    const params = new URLSearchParams();
+    if (filters?.entity_type) params.append('entity_type', filters.entity_type);
+    if (filters?.action) params.append('action', filters.action);
+    if (filters?.actor_id) params.append('actor_id', filters.actor_id);
+    if (filters?.start_date) params.append('start_date', filters.start_date);
+    if (filters?.end_date) params.append('end_date', filters.end_date);
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.page) params.append('page', String(filters.page));
+    if (filters?.limit) params.append('limit', String(filters.limit));
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.request(`/audit${query}`);
+  }
+
+  async exportAuditLogs(
+    format: 'json' | 'csv' = 'csv',
+    filters?: Omit<AuditLogFilters, 'page' | 'limit'>
+  ): Promise<{ export_url: string; expires_at: string }> {
+    const params = new URLSearchParams();
+    params.append('format', format);
+    if (filters?.entity_type) params.append('entity_type', filters.entity_type);
+    if (filters?.action) params.append('action', filters.action);
+    if (filters?.start_date) params.append('start_date', filters.start_date);
+    if (filters?.end_date) params.append('end_date', filters.end_date);
+    return this.request(`/audit/export?${params.toString()}`);
   }
 
   // Project endpoints

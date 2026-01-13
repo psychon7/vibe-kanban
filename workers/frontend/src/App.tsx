@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import MembersPage from './pages/settings/MembersPage';
 import PromptTemplatesPage from './pages/settings/PromptTemplatesPage';
 import PromptSettingsPage from './pages/settings/PromptSettingsPage';
+import AuditLogPage from './pages/settings/AuditLogPage';
 import ProjectBoardPage from './pages/projects/ProjectBoardPage';
 import Layout from './components/Layout';
 
@@ -103,6 +104,16 @@ function AppRoutes() {
           <PrivateRoute>
             <Layout>
               <PromptSettingsPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings/audit-log"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <AuditLogPage />
             </Layout>
           </PrivateRoute>
         }
