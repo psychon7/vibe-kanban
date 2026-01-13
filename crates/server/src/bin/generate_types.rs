@@ -212,6 +212,8 @@ fn generate_types_content() -> String {
         executors::logs::ToolResultValueType::decl(),
         executors::logs::ToolStatus::decl(),
         executors::logs::utils::patch::PatchType::decl(),
+        server::middleware::authorization::Permission::decl(),
+        server::middleware::authorization::Role::decl(),
         serde_json::Value::decl(),
     ];
 
