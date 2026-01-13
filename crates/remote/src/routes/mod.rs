@@ -25,6 +25,7 @@ mod projects;
 mod review;
 pub mod tasks;
 mod tokens;
+pub(crate) mod workspace_members;
 
 pub fn router(state: AppState) -> Router {
     let trace_layer = TraceLayer::new_for_http()
@@ -51,6 +52,7 @@ pub fn router(state: AppState) -> Router {
         .route("/health", get(health))
         .merge(oauth::public_router())
         .merge(organization_members::public_router())
+        .merge(workspace_members::public_router())
         .merge(tokens::public_router())
         .merge(review::public_router())
         .merge(github_app::public_router());
@@ -61,6 +63,7 @@ pub fn router(state: AppState) -> Router {
         .merge(tasks::router())
         .merge(organizations::router())
         .merge(organization_members::protected_router())
+        .merge(workspace_members::protected_router())
         .merge(oauth::protected_router())
         .merge(electric_proxy::router())
         .merge(github_app::protected_router())

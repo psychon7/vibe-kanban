@@ -10,6 +10,8 @@ pub mod projects;
 pub mod reviews;
 pub mod tasks;
 pub mod users;
+pub mod workspace_invitations;
+pub mod workspace_members;
 
 use sqlx::{PgPool, Postgres, Transaction, migrate::MigrateError, postgres::PgPoolOptions};
 
