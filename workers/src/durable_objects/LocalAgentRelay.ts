@@ -4,7 +4,7 @@ import type { Env } from '../types/env';
 export class LocalAgentRelay extends DurableObject {
   private sessions: Set<WebSocket> = new Set();
   private lastHeartbeat: number = 0;
-  private env: Env;
+  public env: Env;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
