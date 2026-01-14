@@ -17,6 +17,9 @@ export interface Env {
   // AI Gateway for LLM integration
   AI: Ai;
 
+  // Durable Objects
+  LOCAL_AGENT_RELAY: DurableObjectNamespace;
+
   // Environment variables
   ENVIRONMENT: 'development' | 'staging' | 'production';
   LOG_LEVEL: 'debug' | 'info' | 'warn' | 'error';

@@ -40,7 +40,7 @@ agentsRoutes.post('/execute', async (c) => {
     JOIN tasks t ON ws.task_id = t.id
     JOIN projects p ON t.project_id = p.id
     WHERE ws.id = ?
-  `).bind(body.session_id).first<{
+  `).bind(body.session_id).first<{ 
     id: string;
     task_id: string;
     workspace_id: string;
@@ -77,7 +77,7 @@ agentsRoutes.post('/execute', async (c) => {
   // Get connected repository for the workspace
   const repo = await c.env.DB.prepare(
     'SELECT repo_owner, repo_name, default_branch FROM connected_repositories WHERE workspace_id = ? LIMIT 1'
-  ).bind(session.workspace_id).first<{
+  ).bind(session.workspace_id).first<{ 
     repo_owner: string;
     repo_name: string;
     default_branch: string;
@@ -358,4 +358,67 @@ agentsRoutes.get('/tools', async (c) => {
       parameters: Object.keys(tool.parameters.properties),
     })),
   });
+});
+
+/**
+ * POST /agents/local/register - Register a local CLI connection
+ */
+agentsRoutes.post('/local/register', async (c) => {
+    // Provide connection info to the CLI
+    return c.json({
+        endpoint: `${c.req.url.replace('/register', '/ws')}`,
+        message: "Use your existing auth token to connect via WebSocket"
+    });
+});
+
+/**
+ * GET /agents/local/ws - WebSocket connection for local CLI
+ */
+agentsRoutes.get('/local/ws', async (c) => {
+    const upgradeHeader = c.req.header('Upgrade');
+    if (!upgradeHeader || upgradeHeader !== 'websocket') {
+        return c.text('Expected Upgrade: websocket', 426);
+    }
+
+    const userId = c.get('user')?.id;
+    if (!userId) return c.text('Unauthorized', 401);
+
+    const id = c.env.LOCAL_AGENT_RELAY.idFromName(userId);
+    const stub = c.env.LOCAL_AGENT_RELAY.get(id);
+
+    return stub.fetch(c.req.raw);
+});
+
+/**
+ * POST /agents/local/execute - Execute command on local CLI
+ */
+agentsRoutes.post('/local/execute', async (c) => {
+    const userId = c.get('user')?.id;
+    if (!userId) return c.text('Unauthorized', 401);
+
+    const id = c.env.LOCAL_AGENT_RELAY.idFromName(userId);
+    const stub = c.env.LOCAL_AGENT_RELAY.get(id);
+    
+    // Create new request to Durable Object
+    const doReq = new Request('http://do/execute', {
+        method: 'POST',
+        headers: c.req.raw.headers,
+        body: c.req.raw.body 
+    });
+
+    return stub.fetch(doReq);
+});
+
+/**
+ * GET /agents/local/status - Get local CLI status
+ */
+agentsRoutes.get('/local/status', async (c) => {
+    const userId = c.get('user')?.id;
+    if (!userId) return c.text('Unauthorized', 401);
+
+    const id = c.env.LOCAL_AGENT_RELAY.idFromName(userId);
+    const stub = c.env.LOCAL_AGENT_RELAY.get(id);
+
+    const doReq = new Request('http://do/status');
+    return stub.fetch(doReq);
 });

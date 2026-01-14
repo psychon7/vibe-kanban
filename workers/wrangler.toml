@@ -43,6 +43,18 @@ id = "6ea26d2a95aa460da9ae6685b8a23b06"
 binding = "AI"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Durable Objects
+# ─────────────────────────────────────────────────────────────────────────────
+
+[[durable_objects.bindings]]
+name = "LOCAL_AGENT_RELAY"
+class_name = "LocalAgentRelay"
+
+[[migrations]]
+tag = "v1" # Should be unique for each migration
+new_classes = ["LocalAgentRelay"]
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Environment Variables (Development)
 # ─────────────────────────────────────────────────────────────────────────────
 

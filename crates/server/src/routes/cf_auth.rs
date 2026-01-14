@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
 
-use crate::{DeploymentImpl, error::ApiError, middleware::AuthContext};
+use crate::{DeploymentImpl, error::ApiError, middleware::cf_access::AuthContext};
 
 /// Response for GET /api/auth/me
 #[derive(Debug, Serialize, TS)]
