@@ -28,6 +28,13 @@ export interface Env {
   ANTHROPIC_API_KEY?: string;
   CF_ACCESS_CLIENT_ID?: string;
   CF_ACCESS_CLIENT_SECRET?: string;
+  
+  // GitHub OAuth (set via wrangler secret put)
+  GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
+  
+  // API Base URL for OAuth callbacks
+  API_BASE_URL?: string;
 }
 
 /**
@@ -46,4 +53,13 @@ export interface Variables {
 
   // Request ID for tracing
   requestId: string;
+
+  // MCP API key context (set by requireApiKey middleware)
+  mcpKey?: {
+    id: string;
+    workspace_id: string;
+    permissions: string[];
+    user_id: string;
+    role: string;
+  };
 }

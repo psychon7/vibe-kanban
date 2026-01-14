@@ -17,6 +17,11 @@ import {
   tasksRoutes,
   promptsRoutes,
   auditRoutes,
+  sessionsRoutes,
+  githubRoutes,
+  agentsRoutes,
+  templatesRoutes,
+  mcpRoutes,
 } from './routes';
 
 // Create the main Hono app
@@ -36,14 +41,32 @@ app.use('*', prettyJSON());
 app.use('*', cors({
   origin: (origin, c) => {
     const allowedOrigin = c.env.CORS_ORIGIN;
-    // Allow configured origin and localhost for development
-    if (origin === allowedOrigin || origin?.startsWith('http://localhost')) {
+    
+    // Allow localhost for development
+    if (origin?.startsWith('http://localhost')) {
       return origin;
     }
+    
+    // Allow exact configured origin
+    if (origin === allowedOrigin) {
+      return origin;
+    }
+    
+    // Allow all *.vibe-kanban.pages.dev subdomains for preview deployments
+    // Matches: staging.vibe-kanban.pages.dev, abc123.vibe-kanban.pages.dev, etc.
+    if (origin && /^https:\/\/[a-z0-9-]+\.vibe-kanban\.pages\.dev$/.test(origin)) {
+      return origin;
+    }
+    
+    // Allow main production domain
+    if (origin === 'https://vibe-kanban.pages.dev') {
+      return origin;
+    }
+    
     return allowedOrigin || '*';
   },
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'X-Workspace-Id', 'X-Request-Id'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Workspace-Id', 'X-Request-Id', 'X-MCP-API-Key'],
   exposeHeaders: ['X-Request-Id', 'X-Response-Time'],
   credentials: true,
   maxAge: 86400,
@@ -92,8 +115,13 @@ api.route('/users', usersRoutes);
 api.route('/workspaces', workspacesRoutes);
 api.route('/projects', projectsRoutes);
 api.route('/tasks', tasksRoutes);
+api.route('/sessions', sessionsRoutes);
 api.route('/prompts', promptsRoutes);
 api.route('/audit', auditRoutes);
+api.route('/github', githubRoutes);
+api.route('/agents', agentsRoutes);
+api.route('/templates', templatesRoutes);
+api.route('/mcp', mcpRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Root Info & 404 Handler
@@ -113,8 +141,13 @@ app.get('/', (c) => {
       workspaces: '/api/v1/workspaces',
       projects: '/api/v1/projects',
       tasks: '/api/v1/tasks',
+      sessions: '/api/v1/sessions',
+      agents: '/api/v1/agents',
+      github: '/api/v1/github',
       prompts: '/api/v1/prompts',
       audit: '/api/v1/audit',
+      templates: '/api/v1/templates',
+      mcp: '/api/v1/mcp',
     },
   });
 });

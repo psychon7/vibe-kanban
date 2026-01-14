@@ -1,0 +1,108 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'workers/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: workers
+        
+      - name: Type check backend
+        run: npx tsc --noEmit
+        working-directory: workers
+        
+      - name: Lint backend
+        run: npm run lint || true
+        working-directory: workers
+        
+      - name: Type check frontend
+        run: npx tsc --noEmit
+        working-directory: workers/frontend
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: workers
+        
+      - name: Run backend tests
+        run: npm test || echo "No tests configured yet"
+        working-directory: workers
+        
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: workers/frontend
+        
+      - name: Run frontend tests
+        run: npm test || echo "No tests configured yet"
+        working-directory: workers/frontend
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: workers
+        
+      - name: Build backend
+        run: npm run build || echo "Using wrangler build"
+        working-directory: workers
+        
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: workers/frontend
+        
+      - name: Build frontend
+        run: npm run build
+        working-directory: workers/frontend

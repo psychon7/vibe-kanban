@@ -8,6 +8,7 @@ import MembersPage from './pages/settings/MembersPage';
 import PromptTemplatesPage from './pages/settings/PromptTemplatesPage';
 import PromptSettingsPage from './pages/settings/PromptSettingsPage';
 import AuditLogPage from './pages/settings/AuditLogPage';
+import ProjectsListPage from './pages/projects/ProjectsListPage';
 import ProjectBoardPage from './pages/projects/ProjectBoardPage';
 import Layout from './components/Layout';
 
@@ -64,6 +65,16 @@ function AppRoutes() {
           <PrivateRoute>
             <Layout>
               <DashboardPage />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/projects"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <ProjectsListPage />
             </Layout>
           </PrivateRoute>
         }

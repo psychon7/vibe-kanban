@@ -1,0 +1,95 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/**'
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend API
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: workers
+        
+      - name: Type check
+        run: npx tsc --noEmit
+        working-directory: workers
+        
+      - name: Deploy to Cloudflare Workers
+        run: npx wrangler deploy --env production
+        working-directory: workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    environment: production
+    needs: deploy-backend
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: npm install
+        working-directory: workers/frontend
+        
+      - name: Build frontend
+        run: npm run build
+        working-directory: workers/frontend
+        env:
+          VITE_API_URL: https://vibe-kanban-api-production.sheshnarayan-iyer.workers.dev
+        
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy dist --project-name=vibe-kanban --commit-dirty=true
+        working-directory: workers/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: always()
+    steps:
+      - name: Deployment Result
+        run: |
+          if [ "${{ needs.deploy-backend.result }}" == "success" ] && [ "${{ needs.deploy-frontend.result }}" == "success" ]; then
+            echo "✅ Production deployment successful!"
+            echo "API: https://vibe-kanban-api-production.sheshnarayan-iyer.workers.dev"
+            echo "Frontend: https://vibe-kanban.pages.dev"
+          else
+            echo "❌ Deployment failed. Check logs for details."
+            exit 1
+          fi

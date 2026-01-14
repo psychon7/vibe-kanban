@@ -78,7 +78,7 @@ export default function WorkspaceSwitcher() {
           </div>
 
           <div className="max-h-60 overflow-y-auto">
-            {workspaces.map((workspace) => (
+            {(workspaces || []).map((workspace) => (
               <button
                 key={workspace.id}
                 onClick={() => {
@@ -96,15 +96,15 @@ export default function WorkspaceSwitcher() {
                     currentWorkspace?.id === workspace.id ? 'bg-indigo-600' : 'bg-gray-400'
                   }`}
                 >
-                  {workspace.name.charAt(0).toUpperCase()}
+                  {(workspace.name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 text-left">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {workspace.name}
+                    {workspace.name || 'Unnamed'}
                   </p>
-                  {workspace.role && (
+                  {(workspace.role || workspace.user_role) && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                      {workspace.role}
+                      {workspace.role || workspace.user_role}
                     </p>
                   )}
                 </div>

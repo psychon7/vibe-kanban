@@ -26,11 +26,11 @@ VITE_API_URL = "http://localhost:8787"
 # ─────────────────────────────────────────────────────────────────────────────
 
 [env.preview]
-vars = { VITE_API_URL = "https://vibe-kanban-api-staging.workers.dev" }
+vars = { VITE_API_URL = "https://vibe-kanban-api-staging.sheshnarayan-iyer.workers.dev" }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Production Environment (main branch)
 # ─────────────────────────────────────────────────────────────────────────────
 
 [env.production]
-vars = { VITE_API_URL = "https://vibe-kanban-api.workers.dev" }
+vars = { VITE_API_URL = "https://vibe-kanban-api-production.sheshnarayan-iyer.workers.dev" }

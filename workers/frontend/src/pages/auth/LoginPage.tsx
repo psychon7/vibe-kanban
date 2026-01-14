@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import DevLoginHelper from '../../components/DevLoginHelper';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,8 +12,8 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: FormEvent) => {
+    e?.preventDefault();
     setError('');
     setIsLoading(true);
 
@@ -24,6 +25,16 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFillCredentials = (devEmail: string, devPassword: string) => {
+    setEmail(devEmail);
+    setPassword(devPassword);
+    setError('');
+  };
+
+  const handleAutoLogin = async () => {
+    await handleSubmit();
   };
 
   return (
@@ -106,6 +117,12 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
+
+        {/* Dev Login Helper - only visible in development */}
+        <DevLoginHelper 
+          onFillCredentials={handleFillCredentials}
+          onAutoLogin={handleAutoLogin}
+        />
       </div>
     </div>
   );

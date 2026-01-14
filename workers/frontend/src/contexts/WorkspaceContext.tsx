@@ -37,7 +37,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      const { workspaces: fetchedWorkspaces } = await api.listWorkspaces();
+      const response = await api.listWorkspaces();
+      const fetchedWorkspaces = response?.workspaces || [];
       setWorkspaces(fetchedWorkspaces);
 
       // Try to restore last selected workspace

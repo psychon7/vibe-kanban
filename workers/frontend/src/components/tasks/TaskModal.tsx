@@ -6,6 +6,7 @@ import AssigneeSelector from './AssigneeSelector';
 import VisibilityToggle from './VisibilityToggle';
 import PromptEnhancementDialog from '../prompts/PromptEnhancementDialog';
 import PromptTemplatePicker from '../prompts/PromptTemplatePicker';
+import SessionPanel from '../sessions/SessionPanel';
 
 interface TaskModalProps {
   task?: Task | null;
@@ -39,6 +40,7 @@ export default function TaskModal({ task, projectId, onClose, onSaved }: TaskMod
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showEnhanceDialog, setShowEnhanceDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'sessions'>('details');
 
   const isEditing = !!task;
 
@@ -111,12 +113,48 @@ export default function TaskModal({ task, projectId, onClose, onSaved }: TaskMod
           onClick={onClose}
         />
 
-        <div className="relative inline-block bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full">
+        <div className="relative inline-block bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-3xl sm:w-full">
+          {/* Tab navigation for editing existing tasks */}
+          {isEditing && (
+            <div className="border-b border-gray-200 dark:border-gray-700">
+              <nav className="flex px-4" aria-label="Tabs">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('details')}
+                  className={`px-4 py-3 text-sm font-medium border-b-2 ${
+                    activeTab === 'details'
+                      ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                >
+                  Details
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('sessions')}
+                  className={`px-4 py-3 text-sm font-medium border-b-2 ${
+                    activeTab === 'sessions'
+                      ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <span className="flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Agent Sessions
+                  </span>
+                </button>
+              </nav>
+            </div>
+          )}
+          
+          {activeTab === 'details' ? (
           <form onSubmit={handleSubmit}>
             <div className="px-4 pt-5 pb-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  {isEditing ? 'Edit Task' : 'Create Task'}
+                  {isEditing ? task.title : 'Create Task'}
                 </h3>
                 <button
                   type="button"
@@ -292,6 +330,29 @@ export default function TaskModal({ task, projectId, onClose, onSaved }: TaskMod
               </div>
             </div>
           </form>
+          ) : (
+            /* Sessions Tab */
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div></div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              {task && (
+                <SessionPanel
+                  taskId={task.id}
+                  taskTitle={task.title}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
 

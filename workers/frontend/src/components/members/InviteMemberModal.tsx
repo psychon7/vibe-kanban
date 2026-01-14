@@ -9,15 +9,15 @@ interface InviteMemberModalProps {
 }
 
 const ROLES = [
-  { id: 'role-admin', name: 'Admin', description: 'Can manage members and all content' },
-  { id: 'role-member', name: 'Member', description: 'Can create and edit content' },
-  { id: 'role-viewer', name: 'Viewer', description: 'Can only view content' },
+  { id: 'Admin', name: 'Admin', description: 'Can manage members and all content' },
+  { id: 'Member', name: 'Member', description: 'Can create and edit content' },
+  { id: 'Viewer', name: 'Viewer', description: 'Can only view content' },
 ];
 
 export default function InviteMemberModal({ onClose, onInvited }: InviteMemberModalProps) {
   const { currentWorkspace } = useWorkspace();
   const [email, setEmail] = useState('');
-  const [roleId, setRoleId] = useState('role-member');
+  const [roleId, setRoleId] = useState<'Admin' | 'Member' | 'Viewer'>('Member');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -126,7 +126,7 @@ export default function InviteMemberModal({ onClose, onInvited }: InviteMemberMo
                               name="role"
                               value={role.id}
                               checked={roleId === role.id}
-                              onChange={(e) => setRoleId(e.target.value)}
+                              onChange={(e) => setRoleId(e.target.value as 'Admin' | 'Member' | 'Viewer')}
                               className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                             />
                             <div className="ml-3">

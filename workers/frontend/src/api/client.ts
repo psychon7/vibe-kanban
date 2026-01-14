@@ -1,4 +1,6 @@
-const API_BASE = '/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api/v1` 
+  : '/api/v1';
 
 export interface ApiError {
   error: string;
@@ -22,13 +24,17 @@ export interface AuthResponse {
 export interface Workspace {
   id: string;
   name: string;
+  slug?: string;
   description?: string;
   avatar_url?: string;
   created_at: string;
   updated_at: string;
-  owner_id: string;
+  created_by?: string;
+  owner_id?: string;
   member_count?: number;
   role?: string;
+  user_role?: string;
+  created_by_name?: string;
 }
 
 export interface WorkspaceMember {
@@ -208,18 +214,60 @@ class ApiClient {
 
   // Workspace members
   async listWorkspaceMembers(workspaceId: string): Promise<{ members: WorkspaceMember[] }> {
-    return this.request<{ members: WorkspaceMember[] }>(`/workspaces/${workspaceId}/members`);
+    const response = await this.request<{
+      members: Array<{
+        id: string;
+        email: string;
+        name: string;
+        avatar_url: string | null;
+        role: 'Owner' | 'Admin' | 'Member' | 'Viewer';
+        status: string;
+        joined_at: string;
+      }>;
+    }>(`/workspaces/${workspaceId}/members`);
+
+    // Normalize backend shape into UI-friendly `WorkspaceMember`
+    const members = (response.members || []).map((m) => {
+      const roleName = (m.role || 'Member').toLowerCase();
+      return {
+        id: `${workspaceId}:${m.id}`,
+        user_id: m.id,
+        workspace_id: workspaceId,
+        role_id: `role-${roleName}`,
+        role_name: roleName,
+        user_email: m.email,
+        user_name: m.name,
+        created_at: m.joined_at,
+      } satisfies WorkspaceMember;
+    });
+
+    return { members };
   }
 
-  async inviteWorkspaceMember(workspaceId: string, email: string, roleId: string): Promise<{ invitation: unknown }> {
-    return this.request<{ invitation: unknown }>(`/workspaces/${workspaceId}/members`, {
+  async inviteWorkspaceMember(
+    workspaceId: string,
+    email: string,
+    role: 'Admin' | 'Member' | 'Viewer'
+  ): Promise<{ invitation?: unknown; member?: unknown; message?: string }> {
+    return this.request<{ invitation?: unknown; member?: unknown; message?: string }>(`/workspaces/${workspaceId}/members/invite`, {
       method: 'POST',
-      body: JSON.stringify({ email, role_id: roleId }),
+      body: JSON.stringify({ email, role }),
     });
   }
 
   async removeWorkspaceMember(workspaceId: string, userId: string): Promise<void> {
     await this.request(`/workspaces/${workspaceId}/members/${userId}`, { method: 'DELETE' });
+  }
+
+  async updateWorkspaceMemberRole(
+    workspaceId: string,
+    userId: string,
+    role: 'Admin' | 'Member' | 'Viewer'
+  ): Promise<{ message: string; role: string }> {
+    return this.request<{ message: string; role: string }>(`/workspaces/${workspaceId}/members/${userId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
   }
 
   // Workspace prompt settings
@@ -385,22 +433,85 @@ class ApiClient {
   // Prompt template endpoints
   async listPromptTemplates(category?: string): Promise<{ templates: PromptTemplate[] }> {
     const query = category ? `?category=${category}` : '';
-    return this.request<{ templates: PromptTemplate[] }>(`/prompts/templates${query}`);
+    const response = await this.request<{ templates: any[] }>(`/prompts/templates${query}`);
+    const templates = (response.templates || []).map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description ?? undefined,
+      template: t.template_text,
+      category: t.category,
+      is_global: Boolean(t.is_global),
+      usage_count: Number(t.usage_count ?? 0),
+      created_at: t.created_at,
+      created_by: t.created_by,
+      updated_at: t.updated_at,
+    })) as PromptTemplate[];
+    return { templates };
   }
 
   async getPromptTemplate(id: string): Promise<{ template: PromptTemplate; placeholders: string[] }> {
-    return this.request<{ template: PromptTemplate; placeholders: string[] }>(`/prompts/templates/${id}`);
+    const response = await this.request<{ template: any; placeholders?: string[] }>(`/prompts/templates/${id}`);
+    const t = response.template;
+    return {
+      template: {
+        id: t.id,
+        name: t.name,
+        description: t.description ?? undefined,
+        template: t.template_text,
+        category: t.category,
+        is_global: Boolean(t.is_global),
+        usage_count: Number(t.usage_count ?? 0),
+        created_at: t.created_at,
+        created_by: t.created_by,
+        updated_at: t.updated_at,
+      },
+      placeholders: (t.placeholders || response.placeholders || []) as string[],
+    };
   }
 
-  async renderPromptTemplate(id: string, variables: Record<string, string>): Promise<{ rendered: string }> {
-    return this.request<{ rendered: string }>(`/prompts/templates/${id}/render`, {
+  async renderPromptTemplate(id: string, variables: Record<string, string>): Promise<{
+    rendered: string;
+    missingPlaceholders?: string[];
+    complete?: boolean;
+  }> {
+    return this.request<{ rendered: string; missingPlaceholders?: string[]; complete?: boolean }>(`/prompts/templates/${id}/render`, {
       method: 'POST',
       body: JSON.stringify({ variables }),
+    });
+  }
+
+  async createPromptTemplate(input: {
+    name: string;
+    description?: string;
+    template_text: string;
+    category?: string;
+  }): Promise<{ template: any }> {
+    return this.request<{ template: any }>('/prompts/templates', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async updatePromptTemplate(
+    id: string,
+    input: Partial<{ name: string; description: string; template_text: string; category: string }>
+  ): Promise<{ template: any }> {
+    return this.request<{ template: any }>(`/prompts/templates/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async deletePromptTemplate(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/prompts/templates/${id}`, {
+      method: 'DELETE',
     });
   }
 }
 
 export const apiClient = new ApiClient();
+// Backwards-compatible alias used throughout the app
+export const api = apiClient;
 export default apiClient;
 
 export interface PromptEnhancementResult {
@@ -426,10 +537,10 @@ export interface PromptTemplate {
   name: string;
   description?: string;
   template: string;
-  category: string;
+  category: string | null;
   is_global: boolean;
   usage_count: number;
   created_at: string;
+  created_by?: string;
+  updated_at?: string;
 }
-
-export const api = new ApiClient();

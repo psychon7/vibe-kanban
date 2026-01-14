@@ -2,6 +2,14 @@
 
 A Cloudflare Workers API for Vibe Kanban team features, using Hono framework and D1 (SQLite) for the database.
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [API Reference](docs/API.md) | Complete API endpoint documentation |
+| [Architecture](docs/ARCHITECTURE.md) | System architecture and data flow diagrams |
+| [Cloudflare Resources](docs/CLOUDFLARE_RESOURCES.md) | Cloudflare services resource mapping |
+
 ## Tech Stack
 
 | Layer | Technology |

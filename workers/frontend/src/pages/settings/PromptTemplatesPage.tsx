@@ -27,20 +27,22 @@ export default function PromptTemplatesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const { templates } = await api.listPromptTemplates();
-      setTemplates(templates);
+      const response = await api.listPromptTemplates();
+      setTemplates(response?.templates || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load templates');
+      setTemplates([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredTemplates = templates.filter(
+  const filteredTemplates = (templates || []).filter(
     (t) => selectedCategory === 'all' || t.category === selectedCategory
   );
 
-  const extractPlaceholders = (template: string): string[] => {
+  const extractPlaceholders = (template: string | undefined | null): string[] => {
+    if (!template) return [];
     const matches = template.match(/\{\{([^}]+)\}\}/g) || [];
     return [...new Set(matches.map((m) => m.replace(/\{\{|\}\}/g, '')))];
   };
@@ -202,13 +204,13 @@ function TemplateEditor({ template, onClose, onSaved }: TemplateEditorProps) {
   const [error, setError] = useState('');
   const [previewVariables, setPreviewVariables] = useState<Record<string, string>>({});
 
-  const placeholders = (content.match(/\{\{([^}]+)\}\}/g) || []).map((m) =>
+  const placeholders = ((content || '').match(/\{\{([^}]+)\}\}/g) || []).map((m) =>
     m.replace(/\{\{|\}\}/g, '')
   );
   const uniquePlaceholders = [...new Set(placeholders)];
 
   const previewContent = () => {
-    let result = content;
+    let result = content || '';
     for (const [key, value] of Object.entries(previewVariables)) {
       result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value || `[${key}]`);
     }
@@ -225,8 +227,22 @@ function TemplateEditor({ template, onClose, onSaved }: TemplateEditorProps) {
     setError('');
 
     try {
-      // Note: API endpoints for create/update would need to be added
-      // For now, just close and refresh
+      if (template) {
+        await api.updatePromptTemplate(template.id, {
+          name: name.trim(),
+          description: description.trim() || '',
+          template_text: content,
+          category,
+        });
+      } else {
+        await api.createPromptTemplate({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          template_text: content,
+          category,
+        });
+      }
+
       onSaved();
       onClose();
     } catch (err) {

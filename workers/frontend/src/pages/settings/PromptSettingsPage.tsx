@@ -80,6 +80,14 @@ export default function PromptSettingsPage() {
     }
   };
 
+  if (!currentWorkspace) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Please select a workspace first.
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">

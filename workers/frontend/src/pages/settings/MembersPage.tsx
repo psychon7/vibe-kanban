@@ -27,10 +27,11 @@ export default function MembersPage() {
     setError(null);
 
     try {
-      const { members } = await api.listWorkspaceMembers(currentWorkspace.id);
-      setMembers(members);
+      const response = await api.listWorkspaceMembers(currentWorkspace.id);
+      setMembers(response?.members || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load members');
+      setMembers([]);
     } finally {
       setIsLoading(false);
     }
@@ -47,15 +48,36 @@ export default function MembersPage() {
     }
   };
 
-  const filteredMembers = members.filter((member) => {
+  const handleChangeRole = async (userId: string, role: 'Admin' | 'Member' | 'Viewer') => {
+    if (!currentWorkspace) return;
+
+    try {
+      await api.updateWorkspaceMemberRole(currentWorkspace.id, userId, role);
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.user_id === userId
+            ? {
+                ...m,
+                role_id: `role-${role.toLowerCase()}`,
+                role_name: role.toLowerCase(),
+              }
+            : m
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update member role');
+    }
+  };
+
+  const filteredMembers = (members || []).filter((member) => {
     const matchesSearch = searchQuery === '' || 
-      member.user_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.user_email.toLowerCase().includes(searchQuery.toLowerCase());
+      (member.user_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.user_email || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === 'all' || member.role_name === roleFilter;
     return matchesSearch && matchesRole;
   });
 
-  const uniqueRoles = [...new Set(members.map((m) => m.role_name))];
+  const uniqueRoles = [...new Set((members || []).map((m) => m.role_name).filter(Boolean))];
 
   if (!currentWorkspace) {
     return (
@@ -155,6 +177,7 @@ export default function MembersPage() {
                   key={member.id}
                   member={member}
                   onRemove={() => handleRemoveMember(member.user_id)}
+                  onChangeRole={(role) => handleChangeRole(member.user_id, role)}
                   currentWorkspace={currentWorkspace}
                 />
               ))}
