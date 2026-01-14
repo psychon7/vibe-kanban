@@ -1,0 +1,133 @@
+/* Cyberpunk Theme - Color Tokens */
+@layer base {
+  /* Light Mode (Default) */
+  .new-design {
+    /* Base Colors */
+    --cp-background: 0 0% 96%; /* #f5f5f5 */
+    --cp-foreground: 222 47% 11%; /* #0f172a */
+    --cp-surface: 0 0% 100%; /* #ffffff */
+    --cp-surface-elevated: 0 0% 98%;
+    
+    /* Brand & Neon Colors - muted in light mode */
+    --cp-primary: 217 91% 60%; /* #2563eb */
+    --cp-primary-foreground: 0 0% 100%;
+    --cp-secondary: 258 90% 66%; /* #8b5cf6 */
+    --cp-secondary-foreground: 0 0% 100%;
+    --cp-accent: 32 95% 44%; /* #f59e0b */
+    --cp-accent-foreground: 0 0% 100%;
+    
+    /* Status Colors */
+    --cp-success: 142 76% 36%; /* #10b981 */
+    --cp-success-foreground: 0 0% 100%;
+    --cp-error: 0 72% 51%; /* #ef4444 */
+    --cp-error-foreground: 0 0% 100%;
+    --cp-warning: 38 92% 50%; /* #f59e0b */
+    --cp-warning-foreground: 0 0% 100%;
+    --cp-info: 199 89% 48%; /* #0ea5e9 */
+    --cp-info-foreground: 0 0% 100%;
+    
+    /* Text Colors */
+    --cp-text-primary: 222 47% 11%; /* #0f172a */
+    --cp-text-secondary: 215 20% 40%; /* #64748b */
+    --cp-text-tertiary: 215 16% 47%; /* #94a3b8 */
+    --cp-text-disabled: 214 14% 71%; /* #cbd5e1 */
+    
+    /* Border & Divider */
+    --cp-border: 214 32% 91%; /* #e2e8f0 */
+    --cp-border-strong: 215 20% 65%;
+    --cp-divider: 214 32% 91%;
+    
+    /* Interactive States */
+    --cp-hover: 210 40% 96%;
+    --cp-pressed: 214 32% 91%;
+    --cp-focus-ring: 217 91% 60%;
+    
+    /* Shadows - minimal in light mode */
+    --cp-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --cp-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --cp-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    
+    /* Glow effects - disabled in light mode */
+    --cp-glow-primary: transparent;
+    --cp-glow-secondary: transparent;
+    --cp-glow-accent: transparent;
+  }
+
+  /* Dark Mode - Cyberpunk */
+  .new-design.dark,
+  .dark .new-design {
+    /* Base Colors - Deep space navy */
+    --cp-background: 222 84% 5%; /* #0a0e1a - deep navy-black */
+    --cp-foreground: 210 40% 98%; /* #e2e8f0 */
+    --cp-surface: 220 39% 11%; /* #111827 - dark slate */
+    --cp-surface-elevated: 217 33% 17%; /* #1e293b */
+    
+    /* Brand & Neon Colors - FULL INTENSITY */
+    --cp-primary: 185 100% 50%; /* #00d9ff - cyan neon */
+    --cp-primary-foreground: 222 84% 5%;
+    --cp-secondary: 300 100% 50%; /* #ff00ff - magenta neon */
+    --cp-secondary-foreground: 222 84% 5%;
+    --cp-accent: 38 100% 50%; /* #ffaa00 - amber glow */
+    --cp-accent-foreground: 222 84% 5%;
+    
+    /* Status Colors - Neon variants */
+    --cp-success: 150 100% 50%; /* #00ff88 - neon green */
+    --cp-success-foreground: 222 84% 5%;
+    --cp-error: 338 100% 50%; /* #ff0055 - hot pink */
+    --cp-error-foreground: 222 84% 5%;
+    --cp-warning: 38 100% 50%; /* #ffaa00 */
+    --cp-warning-foreground: 222 84% 5%;
+    --cp-info: 185 100% 50%; /* #00d9ff */
+    --cp-info-foreground: 222 84% 5%;
+    
+    /* Text Colors */
+    --cp-text-primary: 210 40% 98%; /* #e2e8f0 */
+    --cp-text-secondary: 215 20% 65%; /* #94a3b8 */
+    --cp-text-tertiary: 215 16% 47%; /* #64748b */
+    --cp-text-disabled: 215 20% 40%;
+    
+    /* Border & Divider */
+    --cp-border: 217 33% 17%; /* #1e293b */
+    --cp-border-strong: 215 25% 27%;
+    --cp-divider: 217 33% 17%;
+    
+    /* Interactive States */
+    --cp-hover: 217 33% 20%;
+    --cp-pressed: 217 33% 14%;
+    --cp-focus-ring: 185 100% 50%;
+    
+    /* Shadows - Deep with glow */
+    --cp-shadow-sm: 0 2px 8px 0 rgb(0 0 0 / 0.8);
+    --cp-shadow-md: 0 8px 16px -2px rgb(0 0 0 / 0.9);
+    --cp-shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.95);
+    
+    /* Glow Effects - CYBERPUNK MAGIC */
+    --cp-glow-primary: 0 0 20px rgba(0, 217, 255, 0.5), 0 0 40px rgba(0, 217, 255, 0.3);
+    --cp-glow-secondary: 0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(255, 0, 255, 0.3);
+    --cp-glow-accent: 0 0 20px rgba(255, 170, 0, 0.5), 0 0 40px rgba(255, 170, 0, 0.3);
+    --cp-glow-success: 0 0 20px rgba(0, 255, 136, 0.5), 0 0 40px rgba(0, 255, 136, 0.3);
+    --cp-glow-error: 0 0 20px rgba(255, 0, 85, 0.5), 0 0 40px rgba(255, 0, 85, 0.3);
+  }
+}
+
+/* Color utility classes */
+@layer utilities {
+  .text-cp-primary { color: hsl(var(--cp-primary)); }
+  .text-cp-secondary { color: hsl(var(--cp-secondary)); }
+  .text-cp-accent { color: hsl(var(--cp-accent)); }
+  
+  .bg-cp-primary { background-color: hsl(var(--cp-primary)); }
+  .bg-cp-secondary { background-color: hsl(var(--cp-secondary)); }
+  .bg-cp-accent { background-color: hsl(var(--cp-accent)); }
+  .bg-cp-surface { background-color: hsl(var(--cp-surface)); }
+  
+  .border-cp-primary { border-color: hsl(var(--cp-primary)); }
+  .border-cp-secondary { border-color: hsl(var(--cp-secondary)); }
+  
+  /* Glow utilities */
+  .glow-primary { box-shadow: var(--cp-glow-primary); }
+  .glow-secondary { box-shadow: var(--cp-glow-secondary); }
+  .glow-accent { box-shadow: var(--cp-glow-accent); }
+  .glow-success { box-shadow: var(--cp-glow-success); }
+  .glow-error { box-shadow: var(--cp-glow-error); }
+}

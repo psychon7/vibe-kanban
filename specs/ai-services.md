@@ -19,7 +19,7 @@
 │                                                                             │
 │   ┌───────────────┐     ┌──────────────────┐     ┌─────────────────┐       │
 │   │ Workers API   │────>│  AI Gateway      │────>│ OpenAI API      │       │
-│   │ (Prompt       │     │  • Caching       │     │ (gpt-4-turbo)   │       │
+│   │ (Prompt       │     │  • Caching       │     │ (gpt-4-turbo)   │       │/
 │   │  Enhancement) │     │  • Rate limiting │     └─────────────────┘       │
 │   └───────────────┘     │  • Logging       │     ┌─────────────────┐       │
 │                         │  • Analytics     │────>│ Anthropic API   │       │

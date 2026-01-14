@@ -1,0 +1,190 @@
+/* Cyberpunk Visual Effects */
+
+@layer components {
+  /* Glass Morphism Effect */
+  .glass-morph {
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .new-design.dark .glass-morph {
+    background: rgba(17, 24, 39, 0.5);
+    border: 1px solid rgba(0, 217, 255, 0.2);
+  }
+
+  /* Neon Card */
+  .neon-card {
+    background: hsl(var(--cp-surface));
+    border: 1px solid hsl(var(--cp-border));
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .new-design.dark .neon-card:hover {
+    border-color: hsl(var(--cp-primary));
+    box-shadow: var(--cp-glow-primary);
+    transform: translateY(-2px);
+  }
+
+  /* Gradient Overlays */
+  .gradient-cyan-magenta {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--cp-primary)) 0%,
+      hsl(var(--cp-secondary)) 100%
+    );
+  }
+  
+  .gradient-accent {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--cp-accent)) 0%,
+      hsl(var(--cp-primary)) 100%
+    );
+  }
+
+  /* Scan Lines Effect (optional, can be toggled) */
+  .scan-lines {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .scan-lines::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.1),
+      rgba(0, 0, 0, 0.1) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    opacity: 0.3;
+  }
+  
+  .new-design.dark .scan-lines::before {
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 217, 255, 0.03),
+      rgba(0, 217, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+  }
+
+  /* Grid Background */
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsl(var(--cp-border)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--cp-border)) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .new-design.dark .cyber-grid {
+    background-image: 
+      linear-gradient(rgba(0, 217, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 217, 255, 0.1) 1px, transparent 1px);
+  }
+
+  /* Pulsing Dot Indicator */
+  .pulse-dot {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: hsl(var(--cp-success));
+  }
+  
+  .pulse-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: hsl(var(--cp-success));
+    transform: translate(-50%, -50%);
+    animation: pulse-ring 1.5s ease-out infinite;
+  }
+  
+  @keyframes pulse-ring {
+    0% {
+      transform: translate(-50%, -50%) scale(0.8);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(2);
+      opacity: 0;
+    }
+  }
+
+  /* Shimmer Loading Effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--cp-surface)) 0%,
+      hsl(var(--cp-hover)) 50%,
+      hsl(var(--cp-surface)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Terminal/Console styling */
+  .terminal {
+    background: hsl(var(--_console-background));
+    color: hsl(var(--_console-foreground));
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid hsl(var(--cp-border));
+  }
+  
+  .new-design.dark .terminal {
+    box-shadow: var(--cp-glow-primary);
+    border-color: hsl(var(--cp-primary) / 0.3);
+  }
+
+  /* Focus ring enhancement */
+  .focus-neon:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--cp-background)), 
+                0 0 0 4px hsl(var(--cp-primary)),
+                var(--cp-glow-primary);
+  }
+
+  /* Hover glow for buttons */
+  .hover-glow {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .new-design.dark .hover-glow:hover {
+    box-shadow: var(--cp-glow-primary);
+    transform: translateY(-1px);
+  }
+}
+
+@layer utilities {
+  /* Smooth transitions for theme switching */
+  .transition-theme {
+    transition: 
+      background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}

@@ -1,0 +1,110 @@
+/* Cyberpunk Theme Entry Point */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&family=Orbitron:wght@400..900&display=swap');
+
+/* Import cyberpunk theme modules */
+@import './colors.css';
+@import './effects.css';
+@import './animations.css';
+
+/* Base styles */
+@layer base {
+  .new-design {
+    /* Apply smooth transitions globally */
+    * {
+      @apply transition-theme;
+    }
+
+    /* Typography */
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    
+    /* Base colors */
+    background-color: hsl(var(--cp-background));
+    color: hsl(var(--cp-foreground));
+  }
+
+  /* Headings with cyberpunk flair */
+  .new-design h1,
+  .new-design h2,
+  .new-design h3,
+  .new-design h4,
+  .new-design h5,
+  .new-design h6 {
+    font-family: 'Orbitron', 'IBM Plex Sans', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  /* Code blocks */
+  .new-design code,
+  .new-design pre {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  /* Scrollbar styling */
+  .new-design ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .new-design ::-webkit-scrollbar-track {
+    background: hsl(var(--cp-surface));
+  }
+
+  .new-design ::-webkit-scrollbar-thumb {
+    background: hsl(var(--cp-border));
+    border-radius: 4px;
+  }
+
+  .new-design.dark ::-webkit-scrollbar-thumb {
+    background: hsl(var(--cp-primary) / 0.3);
+  }
+
+  .new-design.dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--cp-primary) / 0.5);
+  }
+
+  /* Selection */
+  .new-design ::selection {
+    background: hsl(var(--cp-primary) / 0.3);
+    color: hsl(var(--cp-foreground));
+  }
+
+  .new-design.dark ::selection {
+    background: hsl(var(--cp-primary) / 0.5);
+  }
+}
+
+/* Typography utilities */
+@layer utilities {
+  .text-heading-1 {
+    @apply text-4xl font-semibold tracking-tight;
+  }
+
+  .text-heading-2 {
+    @apply text-3xl font-semibold tracking-tight;
+  }
+
+  .text-heading-3 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  .text-heading-4 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+
+  .text-body-large {
+    @apply text-lg;
+  }
+
+  .text-body {
+    @apply text-base;
+  }
+
+  .text-body-small {
+    @apply text-sm;
+  }
+
+  .text-caption {
+    @apply text-xs;
+  }
+}
