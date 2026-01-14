@@ -1,6 +1,35 @@
-const API_BASE = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/api/v1` 
-  : '/api/v1';
+/**
+ * Determine API base URL based on environment
+ * - Development: Use VITE_API_URL or localhost:8787
+ * - Production (vibe-kanban.pages.dev): Use production Workers API
+ * - Staging (staging.vibe-kanban.pages.dev): Use staging Workers API
+ */
+function getApiBaseUrl(): string {
+  // Check for explicit env var first
+  if (import.meta.env.VITE_API_URL) {
+    return `${import.meta.env.VITE_API_URL}/api/v1`;
+  }
+
+  // Auto-detect based on current hostname
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Production: vibe-kanban.pages.dev
+    if (hostname === 'vibe-kanban.pages.dev') {
+      return 'https://vibe-kanban-api-production.sheshnarayan-iyer.workers.dev/api/v1';
+    }
+    
+    // Staging: staging.vibe-kanban.pages.dev or any preview deployment
+    if (hostname.includes('vibe-kanban') && hostname.includes('pages.dev')) {
+      return 'https://vibe-kanban-api-staging.sheshnarayan-iyer.workers.dev/api/v1';
+    }
+  }
+
+  // Default: relative path (works with proxy in development)
+  return '/api/v1';
+}
+
+const API_BASE = getApiBaseUrl();
 
 export interface ApiError {
   error: string;
