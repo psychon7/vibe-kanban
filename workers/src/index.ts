@@ -17,6 +17,7 @@ import {
   tasksRoutes,
   promptsRoutes,
   auditRoutes,
+  agentsRoutes,
 } from './routes';
 
 // Create the main Hono app
@@ -94,6 +95,7 @@ api.route('/projects', projectsRoutes);
 api.route('/tasks', tasksRoutes);
 api.route('/prompts', promptsRoutes);
 api.route('/audit', auditRoutes);
+api.route('/agents', agentsRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Root Info & 404 Handler

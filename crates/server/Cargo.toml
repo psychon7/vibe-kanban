@@ -48,6 +48,8 @@ rand = { version = "0.8", features = ["std"] }
 sha2 = "0.10"
 strum = "0.27.2"
 regex = "1"
+clap = { version = "4.5", features = ["derive", "env"] }
+tokio-tungstenite = { version = "0.21", features = ["rustls-tls-native-roots"] }
 
 [build-dependencies]
 dotenv = "0.15"

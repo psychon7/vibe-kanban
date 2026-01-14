@@ -43,6 +43,18 @@ id = "placeholder-create-with-wrangler-kv-namespace-create-CACHE"
 binding = "AI"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Durable Objects
+# ─────────────────────────────────────────────────────────────────────────────
+
+[[durable_objects.bindings]]
+name = "LOCAL_AGENT_RELAY"
+class_name = "LocalAgentRelay"
+
+[[migrations]]
+tag = "v1" # Should be unique for each migration
+new_classes = ["LocalAgentRelay"]
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Environment Variables (Development)
 # ─────────────────────────────────────────────────────────────────────────────
 

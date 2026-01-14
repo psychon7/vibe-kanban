@@ -6,3 +6,4 @@ export { projectsRoutes } from './projects';
 export { tasksRoutes } from './tasks';
 export { promptsRoutes } from './prompts';
 export { auditRoutes } from './audit';
+export { default as agentsRoutes } from './agents';

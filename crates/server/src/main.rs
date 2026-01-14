@@ -1,10 +1,14 @@
 use anyhow::{self, Error as AnyhowError};
+use axum::http::HeaderValue;
+use clap::{Parser, Subcommand};
 use deployment::{Deployment, DeploymentError};
+use futures_util::{SinkExt, StreamExt};
 use server::{DeploymentImpl, routes};
 use services::services::container::ContainerService;
 use sqlx::Error as SqlxError;
 use strip_ansi_escapes::strip;
 use thiserror::Error;
+use tokio_tungstenite::{connect_async, tungstenite::{protocol::Message, client::IntoClientRequest}};
 use tracing_subscriber::{EnvFilter, prelude::*};
 use utils::{
     assets::asset_dir,
@@ -23,6 +27,29 @@ pub enum VibeKanbanError {
     Deployment(#[from] DeploymentError),
     #[error(transparent)]
     Other(#[from] AnyhowError),
+}
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Start the server (default)
+    Server,
+    /// Connect to the remote dashboard
+    Connect {
+        /// Connection token
+        #[arg(short, long, env = "VIBE_TOKEN")]
+        token: String,
+        
+        /// Remote API URL (WebSocket endpoint)
+        #[arg(long, default_value = "wss://vibe-kanban.pages.dev/api/v1/agents/local/ws")]
+        url: String,
+    },
 }
 
 #[tokio::main]
@@ -50,6 +77,15 @@ async fn main() -> Result<(), VibeKanbanError> {
         std::fs::create_dir_all(asset_dir())?;
     }
 
+    let cli = Cli::parse();
+
+    match cli.command.unwrap_or(Commands::Server) {
+        Commands::Server => run_server().await,
+        Commands::Connect { token, url } => run_connect(token, url).await,
+    }
+}
+
+async fn run_server() -> Result<(), VibeKanbanError> {
     let deployment = DeploymentImpl::new().await?;
     deployment.update_sentry_scope().await?;
     deployment
@@ -138,6 +174,77 @@ async fn main() -> Result<(), VibeKanbanError> {
         .await?;
 
     perform_cleanup_actions(&deployment).await;
+
+    Ok(())
+}
+
+async fn run_connect(token: String, url: String) -> Result<(), VibeKanbanError> {
+    tracing::info!("Initializing local agent environment...");
+    let _deployment = DeploymentImpl::new().await?;
+    
+    tracing::info!("Connecting to {}...", url);
+
+    // Construct the request with Authorization header
+    let mut request = url.into_client_request()
+        .map_err(|e| VibeKanbanError::Other(anyhow::anyhow!(e)))?;
+    
+    request.headers_mut().insert(
+        "Authorization", 
+        HeaderValue::from_str(&format!("Bearer {}", token))
+            .map_err(|e| VibeKanbanError::Other(anyhow::anyhow!(e)))?
+    );
+
+    let (ws_stream, _) = connect_async(request).await
+        .map_err(|e| VibeKanbanError::Other(anyhow::anyhow!("Failed to connect: {}", e)))?;
+    
+    tracing::info!("Connected to remote dashboard");
+    let (mut write, mut read) = ws_stream.split();
+
+    // Send initial heartbeat
+    write.send(Message::Text(serde_json::json!({ "type": "HEARTBEAT" }).to_string()))
+        .await
+        .map_err(|e| VibeKanbanError::Other(anyhow::anyhow!(e)))?;
+
+    // Heartbeat loop
+    let mut interval = tokio::time::interval(std::time::Duration::from_secs(15));
+
+    loop {
+        tokio::select! {
+            _ = interval.tick() => {
+                 write.send(Message::Text(serde_json::json!({ "type": "HEARTBEAT" }).to_string()))
+                    .await
+                    .map_err(|e| VibeKanbanError::Other(anyhow::anyhow!(e)))?;
+            }
+            Some(message) = read.next() => {
+                match message {
+                    Ok(msg) => {
+                        if let Message::Text(text) = msg {
+                            tracing::debug!("Received: {}", text);
+                            if let Ok(data) = serde_json::from_str::<serde_json::Value>(&text) {
+                                if data["type"] == "EXECUTE" {
+                                    tracing::info!("Received execution task: {:?}", data["payload"]);
+                                    
+                                    // Ack reception
+                                    write.send(Message::Text(serde_json::json!({ 
+                                        "type": "EXECUTION_STARTED",
+                                        "taskId": data["payload"]["taskId"]
+                                    }).to_string())).await.ok();
+                                    
+                                    // TODO: Implement actual execution logic calling executors
+                                    // For now we log it.
+                                    // We would use deployment.container().create_execution(...)
+                                }
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        tracing::error!("WebSocket error: {}", e);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     Ok(())
 }
